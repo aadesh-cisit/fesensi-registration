@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Personal_Details from "@/components/forms/personal_Details";
-import type { FormData, Errors } from "@/lib/types";
+import type { FormData, Errors, PersonalDetailsForm, OrganizationDetailsForm } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import { organizationDetailsSchema, personalDetailsSchema } from "@/lib/zodSchemas";
 import Organization_details from "@/components/forms/organization_details";
@@ -55,7 +55,6 @@ export default function Page() {
   const [form, setForm] = useState<FormData>(steps[0].initial);
   const [errors, setErrors] = useState<Errors>({});
 
-  const StepComponent = steps[step].component;
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -130,19 +129,19 @@ export default function Page() {
       </CardHeader>
       <CardContent>
         {step === 1 ? (
-          <StepComponent
-            form={form as any /* as OrganizationDetailsForm */}
+          <Organization_details
+            form={form as OrganizationDetailsForm}
             errors={errors}
             onChange={handleChange}
             onAddressChange={handleAddressChange}
           />
         ) : (
-          <StepComponent
-              form={form as any /* as PersonalDetailsForm */}
-              errors={errors}
-              onChange={handleChange}
-              onAddressChange={handleChange}
-            />
+          <Personal_Details
+            form={form as PersonalDetailsForm}
+            errors={errors}
+            onChange={handleChange}
+            onAddressChange={handleChange}
+          />
         )}
 
         <div className="flex justify-between mt-6">

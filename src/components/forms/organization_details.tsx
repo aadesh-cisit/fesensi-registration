@@ -34,13 +34,7 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
   onAddressChange,
 }) => {
   // Handler for department change
-  const handlePLanchange = (value: string) => {
-    // Create a synthetic event to match the onChange signature
-    const event = {
-      target: { name: "department", value },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onChange(event);
-  };
+ 
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
