@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 const personalDetailsSchema = z.object({
-    paymentplan:z.string()
-        .min(1,"Payment PLan is required"),
+
         
     fullName: z.string()
         .min(1, "Full name is required"),
@@ -33,4 +32,21 @@ const personalDetailsSchema = z.object({
     path: ["confirmPassword"],
 })
 
-export {personalDetailsSchema}
+const organizationDetailsSchema = z.object({
+  organizationName: z.string().min(1, "Organization name is required"),
+  taxId: z.string().min(1, "Tax ID is required"),
+  organizationContact: z.string().optional(),
+  organizationEmail: z.string().email("Invalid email address").optional(),
+  organizationIndustry: z.string().min(1, "Industry is required"),
+  numberOfEmployees: z.string().min(1, "Number of employees is required").regex(/^\d+$/, "Must be a number"),
+  organizationWebsite: z.string().url("Invalid website URL"),
+  address: z.object({
+    address: z.string().min(1, "Address is required"),
+    zip: z.string().min(1, "Zip is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(1, "State is required"),
+    country: z.string().min(1, "Country is required"),
+  }),
+});
+
+export { personalDetailsSchema, organizationDetailsSchema };

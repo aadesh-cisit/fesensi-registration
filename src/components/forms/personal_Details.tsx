@@ -23,6 +23,7 @@ interface PersonalDetailsProps {
   };
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAddressChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Personal_Details: React.FC<PersonalDetailsProps> = ({

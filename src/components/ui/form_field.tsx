@@ -19,6 +19,7 @@ import {
 import { Button } from "./button";
 
 export default function FormField({
+  width,
   label,
   optional,
   name,
@@ -31,8 +32,10 @@ export default function FormField({
   error,
   inputComponent,
   onVerifyOtp,
+  children,
 }: {
-  label: string;
+  width?:string
+  label?: string;
   optional?: boolean;
   name: string;
   type?: string;
@@ -44,6 +47,7 @@ export default function FormField({
   inputComponent?: React.ReactNode;
   sendotp?: () => Promise<void>;
   onVerifyOtp?: (otp: string) => Promise<void>;
+  children?: React.ReactNode;
 }) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [otp, setOtp] = React.useState("");
@@ -86,29 +90,32 @@ export default function FormField({
   };
 
   return (
-    <div className="flex flex-col space-y-1 ">
-      <div className="flex flex-row items-center  mb-2 gap-4 ">
-        <Label htmlFor={name} className=" w-full justify-between">
-          <div className="">
-            {label}
-            {optional && (
-              <span className="text-xs text-gray-400 ml-1">(optional)</span>
-            )}
-          </div>
-          <div className="">
-            {verify && (
-              <Link
-                onClick={handleVerifyClick}
-                href={"#"}
-                className="text-sm text-blue-500 text-right"
-              >
-                {loading ? "Sending..." : "verify"}
-              </Link>
-            )}
-          </div>
-        </Label>
-        {error && <p className="text-destructive text-sm ">{error}</p>}
-      </div>
+    <div className={`flex flex-col space-y-1  ${width}`}>
+      {label && (
+        <div className="flex flex-row items-center  mb-2 gap-4 ">
+          <Label htmlFor={name} className=" w-full justify-between">
+            <div className="flex flex-row items-center gap-4">
+              {label}
+              {optional && (
+                <span className="text-xs text-gray-400 ml-1">(optional)</span>
+              )}
+              {error && <p className="text-destructive text-sm ">{error}</p>}
+            </div>
+            <div className="">
+              {verify && (
+                <Link
+                  onClick={handleVerifyClick}
+                  href={"#"}
+                  className="text-sm text-blue-500 text-right"
+                >
+                  {loading ? "Sending..." : "verify"}
+                </Link>
+              )}
+            </div>
+          </Label>
+        </div>
+      )}
+      {children}
       {inputComponent ? (
         inputComponent
       ) : (
