@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 const personalDetailsSchema = z.object({
+    paymentplan:z.string()
+        .min(1,"Payment PLan is required"),
+        
     fullName: z.string()
         .min(1, "Full name is required"),
 
@@ -15,7 +18,8 @@ const personalDetailsSchema = z.object({
         .min(1, "Please confirm your password"),
     
     contactNumber: z.string()
-        .min(10, "Contact number must be at least 10 digits").regex(/^\d+$/, "Contact number must be digits only"),
+        .min(10, "Contact number must be at least 10 digits")
+        .regex(/^\d+$/, "Contact number must be digits only"),
     
     department: z.string()
         .optional(),

@@ -7,8 +7,6 @@ import type { FormData, Errors } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import { personalDetailsSchema } from "@/lib/zodSchemas";
 
-
-
 const steps = [
   {
     name: "Personal Details",
@@ -22,6 +20,7 @@ const steps = [
       contactNumber: "",
       department: "",
       designation: "",
+      verify: false,
     },
   },
   // Add other steps here
@@ -60,7 +59,7 @@ export default function Page() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-10">
+    <Card className=" w-[90%] mt-10">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           <Progress value={
@@ -72,12 +71,12 @@ export default function Page() {
             step {step + 1} of {steps.length} - {steps[step].name}
           </div>
         </CardTitle>
+
       </CardHeader>
       <CardContent>
         <StepComponent form={form} errors={errors} onChange={handleChange} />
 
         <div className="flex justify-between mt-6">
-
           <Button variant="outline" onClick={handlePrev}
             disabled={step === 0}>
             Previous

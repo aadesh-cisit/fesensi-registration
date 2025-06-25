@@ -6,6 +6,7 @@ export interface FormData {
   contactNumber: string;
   department: string;
   designation: string;
+  verify:boolean;
 }
 
 export interface Errors {
