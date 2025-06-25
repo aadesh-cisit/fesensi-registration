@@ -8,6 +8,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogClose,
   DialogDescription,
 } from "../ui/dialog";
 import {
@@ -19,10 +21,11 @@ import {
 import { Button } from "./button";
 
 export default function FormField({
-  width,
+  readonly,
   label,
   optional,
   name,
+  width,
   type = "text",
   placeholder,
   verify,
@@ -34,10 +37,11 @@ export default function FormField({
   onVerifyOtp,
   children,
 }: {
-  width?:string
+  readonly?: boolean;
   label?: string;
   optional?: boolean;
   name: string;
+  width?: string;
   type?: string;
   placeholder: string;
   verify?: boolean;
@@ -62,8 +66,8 @@ export default function FormField({
       try {
         await sendotp();
         setDialogOpen(true);
-      } catch (err: unknown) {
-        setOtpError("Failed to send OTP" + (err instanceof Error ? `: ${err.message}` : ""));
+      } catch (err: any) {
+        setOtpError("Failed to send OTP");
       } finally {
         setLoading(false);
       }
@@ -81,8 +85,8 @@ export default function FormField({
         await onVerifyOtp(otp);
         setDialogOpen(false);
         setOtp("");
-      } catch (err: unknown) {
-        setOtpError("Invalid OTP"+err);
+      } catch (err: any) {
+        setOtpError("Invalid OTP");
       } finally {
         setLoading(false);
       }
@@ -90,36 +94,37 @@ export default function FormField({
   };
 
   return (
-    <div className={`flex flex-col space-y-1  ${width}`}>
-      {label && (
-        <div className="flex flex-row items-center  mb-2 gap-4 ">
-          <Label htmlFor={name} className=" w-full justify-between">
-            <div className="flex flex-row items-center gap-4">
-              {label}
-              {optional && (
-                <span className="text-xs text-gray-400 ml-1">(optional)</span>
-              )}
-              {error && <p className="text-destructive text-sm ">{error}</p>}
-            </div>
-            <div className="">
-              {verify && (
-                <Link
-                  onClick={handleVerifyClick}
-                  href={"#"}
-                  className="text-sm text-blue-500 text-right"
-                >
-                  {loading ? "Sending..." : "verify"}
-                </Link>
-              )}
-            </div>
-          </Label>
-        </div>
-      )}
-      {children}
-      {inputComponent ? (
+    <div className={`flex flex-col space-y-1 ${width}`}>
+      <div className="flex flex-row items-center  mb-2 gap-4 ">
+        <Label htmlFor={name} className=" w-full justify-between">
+          <div className="flex flex-row items-center gap-4">
+            {label}
+            {optional && (
+              <span className="text-xs text-gray-400 ml-1">(optional)</span>
+            )}
+            {error && <p className="text-destructive text-sm ">{error}</p>}
+          </div>
+          <div className="">
+            {verify && (
+              <Link
+                onClick={handleVerifyClick}
+                href={"#"}
+                className="text-sm text-blue-500 text-right"
+              >
+                {loading ? "Sending..." : "verify"}
+              </Link>
+            )}
+          </div>
+        </Label>
+        
+      </div>
+      {children ? (
+        children
+      ) : inputComponent ? (
         inputComponent
       ) : (
         <Input
+          readOnly={readonly}
           id={name}
           name={name}
           type={type}
@@ -151,7 +156,7 @@ export default function FormField({
                 width={50}
                 alt="logo"
               />
-              {otpError && <span>{otpError}</span>}
+
               <InputOTP maxLength={6} className="text-xl">
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />
@@ -164,7 +169,7 @@ export default function FormField({
                 </InputOTPGroup>
               </InputOTP>
 
-              <Button className="w-full" onClick={handleOtpSubmit}>Verify</Button>
+              <Button className="w-full">Verify</Button>
             </div>
           </DialogDescription>
         </DialogContent>

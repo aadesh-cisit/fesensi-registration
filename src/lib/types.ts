@@ -26,7 +26,25 @@ export interface OrganizationDetailsForm {
   };
 }
 
-export type FormData = PersonalDetailsForm | OrganizationDetailsForm;
+export interface IdentificationDetailsForm {
+  idType: string;
+  idNumber: string;
+  issuingAuthority: string;
+}
+
+export interface PaymentPlanDetailsForm {
+  paymentPlan: string;
+  agents: string;
+  discountCode: string;
+  discountPercent: string;
+  discountAmount: string;
+  tax: string;
+  agreeToTerms: boolean;
+  receiveUpdates: boolean;
+  acceptPolicy: boolean;
+}
+
+export type FormData = PersonalDetailsForm | OrganizationDetailsForm | IdentificationDetailsForm | PaymentPlanDetailsForm;
 
 export interface Errors {
   [key: string]: string;

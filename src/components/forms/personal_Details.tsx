@@ -9,6 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/select";
+import NumberInput from "../ui/number-input";
 
 interface PersonalDetailsProps {
   form: {
@@ -116,6 +117,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         value={form.contactNumber}
         onChange={onChange}
         error={errors.contactNumber}
+ 
       />
       <FormField
         label="Department"
