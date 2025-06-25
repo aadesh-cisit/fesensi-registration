@@ -9,21 +9,32 @@ import { personalDetailsSchema } from "@/lib/zodSchemas";
 
 
 
-const steps = [
-  {
-    name: "Personal Details",
-    component: Personal_Details,
-    schema: personalDetailsSchema,
-    initial: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      contactNumber: "",
-      department: "",
-      designation: "",
+  const steps = [
+    {
+      name: "Personal Details",
+      component: Personal_Details,
+      schema: personalDetailsSchema,
+      initial: {
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        contactNumber: "",
+        department: "",
+        designation: "",
+      },
     },
-  },
+  // 
+//  {
+//     name: "Official Identification Documents (Optional For FREE Plan))",
+//     component: Personal_Details ,
+//     schema:personalDetailsSchema,
+//     initial: {
+//       idType: "",
+//       idNumber: "",
+//       issuingAuthority: "",
+//     },
+//   },
   // Add other steps here
 ];
 
@@ -60,7 +71,7 @@ export default function Page() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-10">
+    <Card className=" w-full   max-w-md mx-auto mt-10">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
           <Progress value={
