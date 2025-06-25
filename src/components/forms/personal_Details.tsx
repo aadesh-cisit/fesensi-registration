@@ -9,7 +9,6 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/select";
-import NumberInput from "../ui/number-input";
 
 interface PersonalDetailsProps {
   form: {

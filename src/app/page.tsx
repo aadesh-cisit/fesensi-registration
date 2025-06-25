@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import RegistrationCompleted from "../components/forms/registration-completed";
 
 const steps = [
   {
@@ -87,21 +88,78 @@ const steps = [
     component: PaymentPlanDetails,
     schema: paymentPlanDetailsSchema,
     initial: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      contactNumber: "",
+      department: "",
+      designation: "",
+      verify: false,
+      organizationName: "",
+      taxId: "",
+      organizationContact: "",
+      organizationEmail: "",
+      organizationIndustry: "",
+      numberOfEmployees: "",
+      organizationWebsite: "",
+      address: {
+        address: "",
+        zip: "",
+        city: "",
+        state: "",
+        country: "",
+      },
+      idType: "",
+      idNumber: "",
+      issuingAuthority: "",
       paymentPlan: "",
       agents: "",
       discountCode: "",
       discountPercent: "",
       discountAmount: "",
       tax: "",
-      agreeToTerms: false,
-      receiveUpdates: false,
-      acceptPolicy: false,
     },
   },
-  // {
-  //   name:'Regitration Complete',
-  //   subheader:'',
-  // },
+  {
+    name: "Registration Completed",
+    subheader: "",
+    component: RegistrationCompleted,
+    schema: null,
+    initial: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      contactNumber: "",
+      department: "",
+      designation: "",
+      verify: false,
+      organizationName: "",
+      taxId: "",
+      organizationContact: "",
+      organizationEmail: "",
+      organizationIndustry: "",
+      numberOfEmployees: "",
+      organizationWebsite: "",
+      address: {
+        address: "",
+        zip: "",
+        city: "",
+        state: "",
+        country: "",
+      },
+      idType: "",
+      idNumber: "",
+      issuingAuthority: "",
+      paymentPlan: "",
+      agents: "",
+      discountCode: "",
+      discountPercent: "",
+      discountAmount: "",
+      tax: "",
+    },
+  },
 ];
 
 export default function Page() {
@@ -155,7 +213,9 @@ export default function Page() {
 
   // Reusable validation function for current step
   function validateCurrentStep() {
-    const result = steps[step].schema.safeParse(form);
+    const schema = steps[step].schema;
+    if (!schema) return true;
+    const result = schema.safeParse(form);
     if (!result.success) {
       const fieldErrors: Errors = {};
       for (const err of result.error.errors) {
@@ -179,10 +239,13 @@ export default function Page() {
     }
     setStep((s) => {
       const nextStep = Math.min(steps.length - 1, s + 1);
-      setForm((prevForm) => ({
-        ...steps[nextStep].initial,
-        ...prevForm,
-      }));
+      // Only update form if not on the last step
+      if (nextStep < steps.length - 1) {
+        setForm((prevForm) => ({
+          ...steps[nextStep].initial,
+          ...prevForm,
+        }));
+      }
       return nextStep;
     });
   }
@@ -199,15 +262,17 @@ export default function Page() {
             value={((step + 1) / steps.length) * 100}
             className="mb-4"
           />
+          <div className="flex flex-row gaap-4">
           Organization Onboarding
           {step !== 0 && (
             <div
               className="text-blue-500
           "
             >
-              ({plan}) plan
+              ({plan} plan) 
             </div>
           )}
+            </div>
           <div className="text-gray-500 font-medium text-sm mt-1">
             step {step + 1} of {steps.length} - {steps[step].name}
             <div className="text-black">{steps[step].subheader}</div>
@@ -219,16 +284,21 @@ export default function Page() {
         <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Email Not Verified</DialogTitle>
+              <DialogTitle>Your email is not verified</DialogTitle>
             </DialogHeader>
-            <p>Please verify your email before proceeding.</p>
+            <p>Do you wish to continue without verifying your email.</p>
             <DialogFooter>
               <DialogClose asChild>
-                <Button onClick={() => setShowVerifyDialog(false)}>
-                  Close
+                <Button
+                  className="w-1/3"
+                  onClick={() => setShowVerifyDialog(false)}
+                >
+                  verify
                 </Button>
               </DialogClose>
               <Button
+                className="
+              w-2/3"
                 variant="outline"
                 onClick={() => {
                   // Validate before skipping
@@ -248,7 +318,7 @@ export default function Page() {
                   });
                 }}
               >
-                Skip
+                conitune without verifying
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -285,13 +355,18 @@ export default function Page() {
             onChange={handleChange}
           />
         )}
+        {step === 4 && <RegistrationCompleted />}
         <div className="flex justify-between mt-6">
-          <Button variant="outline" onClick={handlePrev} disabled={step === 0}>
-            Back
-          </Button>
-          <Button className="" onClick={handleNext}>
-            Next
-          </Button>
+          {step < 4 && (
+            <>
+              <Button variant="outline" onClick={handlePrev} disabled={step === 0}>
+                Back
+              </Button>
+              <Button className="" onClick={handleNext}>
+                Next
+              </Button>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

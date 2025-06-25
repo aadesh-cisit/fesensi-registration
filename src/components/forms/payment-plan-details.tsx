@@ -131,6 +131,7 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
 
       <FormField
         label="Tax"
+        readonly={true}
         name="tax"
         type="text"
         placeholder="Tax to be calculated"
@@ -148,51 +149,6 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
         onChange={onChange}
         error={errors.tax}
       />
-      <div className="space-y-2">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="agreeToTerms"
-            checked={form.agreeToTerms}
-            onChange={(e) =>
-              handleCheckboxChange("agreeToTerms", e.target.checked)
-            }
-          />
-          By signing up you agree to our{" "}
-          <Link href={"#"}>Terms and conditions</Link> and{" "}
-          <Link href={"#"}>Privacy policy</Link>
-        </label>
-        {errors.agreeToTerms && (
-          <p className="text-destructive text-sm">{errors.agreeToTerms}</p>
-        )}
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="receiveUpdates"
-            checked={form.receiveUpdates}
-            onChange={(e) =>
-              handleCheckboxChange("receiveUpdates", e.target.checked)
-            }
-          />
-          i understand that my organisation's and my peronal data will be
-          processed in accordance with those policies, and I confirm I am
-          authothised to bind my organisation to this agreement.
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="acceptPolicy"
-            checked={form.acceptPolicy}
-            onChange={(e) =>
-              handleCheckboxChange("acceptPolicy", e.target.checked)
-            }
-          />
-          Send me product updates and tips (you can opt out anytime)
-        </label>
-        {errors.acceptPolicy && (
-          <p className="text-destructive text-sm">{errors.acceptPolicy}</p>
-        )}
-      </div>
     </form>
   );
 };

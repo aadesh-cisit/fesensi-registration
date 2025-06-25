@@ -157,13 +157,10 @@ export default function FormField({
                 alt="logo"
               />
 
-              <InputOTP maxLength={6} className="text-xl">
-                <InputOTPGroup>
+              <InputOTP maxLength={4} className="text-xl">
+                <InputOTPGroup className="gap-2">
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
                   <InputOTPSlot index={2} />
                   <InputOTPSlot index={3} />
                 </InputOTPGroup>
