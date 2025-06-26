@@ -3,6 +3,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import React from "react";
 import Image from "next/image";
+import Countdown from "react-countdown";
 import {
   Dialog,
   DialogContent,
@@ -13,16 +14,17 @@ import {
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "./button";
+import { savetimer } from "@/lib/utils";
 
 export default function FormField({
-  width,
+  readonly,
   label,
   optional,
   name,
+  width,
   type = "text",
   placeholder,
   verify,
@@ -34,10 +36,11 @@ export default function FormField({
   onVerifyOtp,
   children,
 }: {
-  width?:string
+  readonly?: boolean;
   label?: string;
   optional?: boolean;
   name: string;
+  width?: string;
   type?: string;
   placeholder: string;
   verify?: boolean;
@@ -54,6 +57,16 @@ export default function FormField({
   const [loading, setLoading] = React.useState(false);
   const [otpError, setOtpError] = React.useState<string | null>(null);
 
+  // OTP timer logic
+  const OTP_DURATION = 5 * 60 * 1000; // 5 minutes in ms
+  const [otpStart, setOtpStart] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("otp_request");
+      return saved ? parseInt(saved) : Date.now();
+    }
+    return Date.now();
+  });
+
   const handleVerifyClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (sendotp) {
@@ -61,9 +74,11 @@ export default function FormField({
       setOtpError(null);
       try {
         await sendotp();
+        savetimer();
+        setOtpStart(Date.now());
         setDialogOpen(true);
       } catch (err: unknown) {
-        setOtpError("Failed to send OTP" + (err instanceof Error ? `: ${err.message}` : ""));
+        setOtpError("Failed to send OTP"+err);
       } finally {
         setLoading(false);
       }
@@ -90,36 +105,37 @@ export default function FormField({
   };
 
   return (
-    <div className={`flex flex-col space-y-1  ${width}`}>
-      {label && (
-        <div className="flex flex-row items-center  mb-2 gap-4 ">
-          <Label htmlFor={name} className=" w-full justify-between">
-            <div className="flex flex-row items-center gap-4">
-              {label}
-              {optional && (
-                <span className="text-xs text-gray-400 ml-1">(optional)</span>
-              )}
-              {error && <p className="text-destructive text-sm ">{error}</p>}
-            </div>
-            <div className="">
-              {verify && (
-                <Link
-                  onClick={handleVerifyClick}
-                  href={"#"}
-                  className="text-sm text-blue-500 text-right"
-                >
-                  {loading ? "Sending..." : "verify"}
-                </Link>
-              )}
-            </div>
-          </Label>
-        </div>
-      )}
-      {children}
-      {inputComponent ? (
+    <div className={`flex flex-col space-y-1 ${width}`}>
+      <div className="flex flex-row items-center  mb-2 gap-4 ">
+        <Label htmlFor={name} className=" w-full justify-between">
+          <div className="flex flex-row items-center gap-4">
+            {label}
+            {optional && (
+              <span className="text-xs text-gray-400 ml-1">(optional)</span>
+            )}
+            {error && <p className="text-destructive text-sm ">{error}</p>}
+          </div>
+          <div className="">
+            {verify && (
+              <Link
+                onClick={handleVerifyClick}
+                href={"#"}
+                className="text-sm text-blue-500 text-right"
+              >
+                {loading ? "Sending..." : "verify"}
+              </Link>
+            )}
+          </div>
+        </Label>
+      </div>
+      {children ? (
+        children
+      ) : inputComponent ? (
         inputComponent
       ) : (
         <Input
+          readOnly={readonly}
+          className="bg-indigo-50 focus-visible:border-[#] "
           id={name}
           name={name}
           type={type}
@@ -145,26 +161,48 @@ export default function FormField({
             "
             >
               <Image
-                src={"/logo.png"}
+                src={"/popupfaded.png"}
                 className="w-1/3"
                 height={50}
                 width={50}
                 alt="logo"
               />
-              {otpError && <span>{otpError}</span>}
-              <InputOTP maxLength={6} className="text-xl">
-                <InputOTPGroup>
+
+              <InputOTP maxLength={4} className="text-xl">
+                <InputOTPGroup className="gap-2">
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
                   <InputOTPSlot index={2} />
                   <InputOTPSlot index={3} />
                 </InputOTPGroup>
               </InputOTP>
 
-              <Button className="w-full" onClick={handleOtpSubmit}>Verify</Button>
+              {otpError && <div className="text-destructive">{otpError}</div>}
+              <div className="">
+                <Countdown
+                  date={otpStart + OTP_DURATION}
+                  renderer={({ minutes, seconds, completed }) =>
+                    completed ? (
+                      <Link
+                        href={"#"}
+                        className="text-blue-500"
+                        onClick={handleVerifyClick}
+                      >
+                        Resend otp
+                      </Link>
+                    ) : (
+                      <span>
+                        Resend code in {String(minutes).padStart(2, "0")}:
+                        {String(seconds).padStart(2, "0")}
+                      </span>
+                    )
+                  }
+                />
+              </div>
+
+              <Button className="w-full" onClick={handleOtpSubmit}>
+                Verify
+              </Button>
             </div>
           </DialogDescription>
         </DialogContent>

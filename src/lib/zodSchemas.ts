@@ -36,7 +36,12 @@ const organizationDetailsSchema = z.object({
   organizationName: z.string().min(1, "Organization name is required"),
   taxId: z.string().min(1, "Tax ID is required"),
   organizationContact: z.string().optional(),
-  organizationEmail: z.string().email("Invalid email address").optional(),
+  organizationEmail: z
+  .string()
+  .email("Invalid email address")
+  .optional()
+  .or(z.literal("")),
+
   organizationIndustry: z.string().min(1, "Industry is required"),
   numberOfEmployees: z.string().min(1, "Number of employees is required").regex(/^\d+$/, "Must be a number"),
   organizationWebsite: z.string().url("Invalid website URL"),
@@ -49,4 +54,22 @@ const organizationDetailsSchema = z.object({
   }),
 });
 
-export { personalDetailsSchema, organizationDetailsSchema };
+const Iddocumentationschema = z.object({
+  idType: z.string().min(1, "ID Type is required"),
+  idNumber: z.string().min(1, "ID Number is required"),
+  issuingAuthority: z.string().min(1, "Issuing Authority is required"),
+});
+
+const paymentPlanDetailsSchema = z.object({
+  paymentPlan: z.string().min(1, "Payment plan is required"),
+  agents: z.string().min(1, "Number of agents is required").regex(/^\d+$/, "Must be a number"),
+  discountCode: z.string().optional(),
+  discountPercent: z.string().optional(),
+  discountAmount: z.string().optional(),
+  tax: z.string().optional(),
+  agreeToTerms: z.literal(true, { message: "You must agree to the terms" }),
+  receiveUpdates: z.boolean().optional(),
+  acceptPolicy: z.literal(true, { message: "You must accept the policy" }),
+});
+
+export { personalDetailsSchema, organizationDetailsSchema, Iddocumentationschema, paymentPlanDetailsSchema };

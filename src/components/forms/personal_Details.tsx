@@ -12,6 +12,7 @@ import {
 
 interface PersonalDetailsProps {
   form: {
+    plan:string
     fullName: string;
     email: string;
     password: string;
@@ -35,7 +36,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   const handlePLanchange = (value: string) => {
     // Create a synthetic event to match the onChange signature
     const event = {
-      target: { name: "department", value },
+      target: { name: "plan", value },
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
   };
@@ -50,15 +51,15 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         name="plan"
         optional={false}
         placeholder="Select a plan"
-        value={form.department}
+        value={form.plan}
         onChange={onChange}
-        error={errors.department}
+        error={errors.plan}
         inputComponent={
           <Select
-            value={form.department}
+            value={form.plan}
             onValueChange={handlePLanchange}
           >
-            <SelectTrigger id="Plans" className="w-full mb-4">
+            <SelectTrigger id="Plans" className="w-full mb-4 bg-indigo-50 active:border-[1px] active:border-[#2141BB] focus-visible:border-[#2141BB] focus-visible:border-[1px] focus-visible:ring-[#2141BB]  focus-visible:ring-[1px]">
               <SelectValue placeholder="Select a plan" className=""/>
             </SelectTrigger>
             <SelectContent>
@@ -116,10 +117,11 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         value={form.contactNumber}
         onChange={onChange}
         error={errors.contactNumber}
+ 
       />
       <FormField
         label="Department"
-        name="Department"
+        name="department"
         optional={true}
         placeholder="Enter your Department"
         value={form.department}
