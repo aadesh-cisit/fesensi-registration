@@ -23,7 +23,6 @@ interface PaymentPlanDetailsProps {
     agreeToTerms: boolean;
     receiveUpdates: boolean;
     acceptPolicy: boolean;
-    // ...other fields if needed
   };
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -45,8 +44,8 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
   // Handler for checkbox changes
   const handleCheckboxChange = (name: string, checked: boolean) => {
     const event = {
-      target: { name, value: checked ? "true" : "false" },
-    } as React.ChangeEvent<HTMLInputElement>;
+      target: { name, type: "checkbox", checked, value: checked },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
   };
 
@@ -62,7 +61,7 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
         error={errors.paymentPlan}
         inputComponent={
           <Select value={form.paymentPlan} onValueChange={handlePlanChange}>
-            <SelectTrigger id="Select a payment cycle" className="w-full mb-4">
+            <SelectTrigger id="Select a payment cycle" className="w-full mb-4 bg-indigo-50">
               <SelectValue placeholder="Select a plan" className="" />
             </SelectTrigger>
             <SelectContent>
@@ -127,8 +126,6 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
         </div>
       </div>
 
-      {/* Checkboxes Section */}
-
       <FormField
         label="Tax"
         readonly={true}
@@ -148,6 +145,71 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
         value={form.tax}
         onChange={onChange}
         error={errors.tax}
+      />
+
+      <FormField
+        label="I agree to the Terms and Conditions"
+        name="agreeToTerms"
+        optional={false}
+        placeholder=""
+        value={form.agreeToTerms ? "true" : "false"}
+        onChange={onChange}
+        error={errors.agreeToTerms}
+        inputComponent={
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="agreeToTerms"
+              checked={form.agreeToTerms}
+              onChange={e => handleCheckboxChange("agreeToTerms", e.target.checked)}
+              className="mr-2"
+            />
+            <span>By signing up you agree to our <Link className="bg-blue-500"  href={'/'}>Terms and Conditions </Link> and <Link href={'/'} className="bg-blue-500">Privacy policy</Link></span>
+          </div>
+        }
+      />
+  
+      <FormField
+        label="I accept the Privacy Policy"
+        name="acceptPolicy"
+        optional={false}
+        placeholder=""
+        value={form.acceptPolicy ? "true" : "false"}
+        onChange={onChange}
+        error={errors.acceptPolicy}
+        inputComponent={
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="acceptPolicy"
+              checked={form.acceptPolicy}
+              onChange={e => handleCheckboxChange("acceptPolicy", e.target.checked)}
+              className="mr-2"
+            />
+            <span>I understand that my organisation’s and my personal data will be processed in accordance with those policies, and I confirm I am authorised to bind my organisation to this agreement.</span>
+          </div>
+        }
+      />
+          <FormField
+        label="I want to receive updates"
+        name="receiveUpdates"
+        optional={true}
+        placeholder=""
+        value={form.receiveUpdates ? "true" : "false"}
+        onChange={onChange}
+        error={errors.receiveUpdates}
+        inputComponent={
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="receiveUpdates"
+              checked={form.receiveUpdates}
+              onChange={e => handleCheckboxChange("receiveUpdates", e.target.checked)}
+              className="mr-2"
+            />
+            <span>I want to receive updates</span>
+          </div>
+        }
       />
     </form>
   );

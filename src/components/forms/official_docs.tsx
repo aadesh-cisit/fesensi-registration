@@ -33,22 +33,28 @@ const IdentificationDetails: React.FC<IdentificationDetailsProps> = ({
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
       {/* ID Type - Select from shadcn */}
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          ID Type
-        </label>
-        <Select onValueChange={onSelectChange} defaultValue={form.idType}>
-          <SelectTrigger className=" shadow-sm p-2 border w-full bg-indigo-50 text-gray-800">
-            <SelectValue placeholder="Select ID Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
-            <SelectItem value="PAN">PAN</SelectItem>
-            <SelectItem value="Passport">Passport</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.idType && (
-          <p className="text-red-500 text-sm mt-1">{errors.idType}</p>
-        )}
+   
+        <FormField
+          label="ID Type"
+          name="idType"
+          optional={false}
+          placeholder="Select ID Type"
+          value={form.idType}
+          onChange={onChange}
+          error={errors.idType}
+          inputComponent={
+            <Select onValueChange={onSelectChange} defaultValue={form.idType}>
+              <SelectTrigger className=" w-full bg-indigo-50 text-gray-800">
+                <SelectValue placeholder="Select ID Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                <SelectItem value="PAN">PAN</SelectItem>
+                <SelectItem value="Passport">Passport</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
       </div>
 
       {/* Identification Number */}

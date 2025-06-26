@@ -174,7 +174,11 @@ export default function Page() {
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ): void {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    let value: any = e.target.value;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
+    setForm({ ...form, [e.target.name]: value });
     setErrors({ ...errors, [e.target.name]: "" });
   }
 

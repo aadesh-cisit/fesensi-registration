@@ -98,7 +98,7 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
         onChange={() => {}}
         error=""
       >
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-2">
           <FormField
             width="w-2/3"
             name="address"
@@ -116,7 +116,7 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
             error={errors["address.zip"]}
           />
         </div>
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-2">
           <FormField
             width="w-1/3"
             name="city"

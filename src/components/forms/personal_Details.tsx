@@ -58,7 +58,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
             value={form.department}
             onValueChange={handlePLanchange}
           >
-            <SelectTrigger id="Plans" className="w-full mb-4">
+            <SelectTrigger id="Plans" className="w-full mb-4 bg-indigo-50">
               <SelectValue placeholder="Select a plan" className=""/>
             </SelectTrigger>
             <SelectContent>

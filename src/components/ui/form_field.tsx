@@ -3,6 +3,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import React from "react";
 import Image from "next/image";
+import Countdown from 'react-countdown';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "./button";
+import { savetimer } from "@/lib/utils";
 
 export default function FormField({
   readonly,
@@ -58,6 +60,16 @@ export default function FormField({
   const [loading, setLoading] = React.useState(false);
   const [otpError, setOtpError] = React.useState<string | null>(null);
 
+  // OTP timer logic
+  const OTP_DURATION = 5 * 60 * 1000; // 5 minutes in ms
+  const [otpStart, setOtpStart] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('otp_request');
+      return saved ? parseInt(saved) : Date.now();
+    }
+    return Date.now();
+  });
+
   const handleVerifyClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (sendotp) {
@@ -65,6 +77,8 @@ export default function FormField({
       setOtpError(null);
       try {
         await sendotp();
+        savetimer();
+        setOtpStart(Date.now());
         setDialogOpen(true);
       } catch (err: any) {
         setOtpError("Failed to send OTP");
@@ -125,6 +139,7 @@ export default function FormField({
       ) : (
         <Input
           readOnly={readonly}
+          className="bg-indigo-50"
           id={name}
           name={name}
           type={type}
@@ -150,7 +165,7 @@ export default function FormField({
             "
             >
               <Image
-                src={"/logo.png"}
+                src={"/popupfaded.png"}
                 className="w-1/3"
                 height={50}
                 width={50}
@@ -166,7 +181,23 @@ export default function FormField({
                 </InputOTPGroup>
               </InputOTP>
 
-              <Button className="w-full">Verify</Button>
+
+              <div className="">
+                <Countdown
+                  date={otpStart + OTP_DURATION}
+                  renderer={({ minutes, seconds, completed }) =>
+                    completed ? (
+                      <Link href={'#'} className="text-blue-500" onClick={handleVerifyClick}>
+                        Resend otp
+                      </Link>
+                    ) : (
+                      <span>Resend code in {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
+                    )
+                  }
+                />
+              </div>
+
+              <Button className="w-full" onClick={handleOtpSubmit}>Verify</Button>
             </div>
           </DialogDescription>
         </DialogContent>

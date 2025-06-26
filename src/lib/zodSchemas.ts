@@ -36,7 +36,12 @@ const organizationDetailsSchema = z.object({
   organizationName: z.string().min(1, "Organization name is required"),
   taxId: z.string().min(1, "Tax ID is required"),
   organizationContact: z.string().optional(),
-  organizationEmail: z.string().email("Invalid email address").optional(),
+  organizationEmail: z
+  .string()
+  .email("Invalid email address")
+  .optional()
+  .or(z.literal("")),
+
   organizationIndustry: z.string().min(1, "Industry is required"),
   numberOfEmployees: z.string().min(1, "Number of employees is required").regex(/^\d+$/, "Must be a number"),
   organizationWebsite: z.string().url("Invalid website URL"),
