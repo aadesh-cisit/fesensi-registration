@@ -172,6 +172,7 @@ function PageContent() {
   const [form, setForm] = useState<FormData>(steps[0].initial);
   const [errors, setErrors] = useState<Errors>({});
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [bypassVerification, setBypassVerification] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -234,8 +235,8 @@ function PageContent() {
   }
 
   function handleNext() {
-    // If on the first step and email is not verified, show dialog
-    if (step === 0 && !(form as PersonalDetailsForm).verify) {
+    // If on the first step and email is not verified and not bypassing, show dialog
+    if (step === 0 && !(form as PersonalDetailsForm).verify && !bypassVerification) {
       setShowVerifyDialog(true);
       return;
     }
@@ -251,6 +252,8 @@ function PageContent() {
           ...prevForm,
         }));
       }
+      // Reset bypassVerification when moving to next step
+      setBypassVerification(false);
       return nextStep;
     });
   }
@@ -286,44 +289,32 @@ function PageContent() {
       </CardHeader>
       <CardContent>
         {/* Email not verified dialog */}
-        <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
+        <Dialog open={showVerifyDialog} onOpenChange={(open) => {
+          setShowVerifyDialog(open);
+          if (!open) setBypassVerification(false); // Reset bypass if dialog closes
+        }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Your email is not verified</DialogTitle>
             </DialogHeader>
-            <p>Do you wish to continue without verifying your email.</p>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button
-                  className="w-1/3"
-                  onClick={() => setShowVerifyDialog(false)}
-                >
-                  verify
-                </Button>
-              </DialogClose>
+            <p>Please verify your email before proceeding to the next step.</p>
+            <DialogFooter className="flex flex-col gap-2">
               <Button
-                className="
-              w-2/3"
+                className="w-1/3"
+                onClick={() => setShowVerifyDialog(false)}
+              >
+                Verify
+              </Button>
+              <Button
+                className="w-2/3"
                 variant="outline"
                 onClick={() => {
-                  // Validate before skipping
-                  if (!validateCurrentStep()) {
-                    setShowVerifyDialog(false); // Optionally close dialog on error
-                    return;
-                  }
                   setShowVerifyDialog(false);
-                  // Skip verification and proceed to next step
-                  setStep((s) => {
-                    const nextStep = Math.min(steps.length - 1, s + 1);
-                    setForm((prevForm) => ({
-                      ...steps[nextStep].initial,
-                      ...prevForm,
-                    }));
-                    return nextStep;
-                  });
+                  setBypassVerification(true);
+                  setTimeout(() => handleNext(), 0); // Proceed after closing dialog
                 }}
               >
-                conitune without verifying
+                Continue without verification
               </Button>
             </DialogFooter>
           </DialogContent>

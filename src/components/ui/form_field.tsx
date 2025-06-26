@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import Image from "next/image";
 import Countdown from "react-countdown";
 import {
@@ -18,24 +18,15 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "./button";
 import { savetimer } from "@/lib/utils";
+import { verifySchema } from "@/lib/zodSchemas";
+import { ZodError } from "zod";
 
-export default function FormField({
-  readonly,
-  label,
-  optional,
-  name,
-  width,
-  type = "text",
-  placeholder,
-  verify,
-  value,
-  sendotp,
-  onChange,
-  error,
-  inputComponent,
-  onVerifyOtp,
-  children,
-}: {
+export type FormFieldRef = {
+  isVerified: boolean;
+  showEmailNotVerifiedDialog: () => void;
+};
+
+type FormFieldProps = {
   readonly?: boolean;
   label?: string;
   optional?: boolean;
@@ -51,14 +42,45 @@ export default function FormField({
   sendotp?: () => Promise<void>;
   onVerifyOtp?: (otp: string) => Promise<void>;
   children?: React.ReactNode;
-}) {
+  fullForm?: { fullName: string; email: string };
+  onVerifiedChange?: (verified: boolean) => void;
+};
+
+const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
+  readonly,
+  label,
+  optional,
+  name,
+  width,
+  type = "text",
+  placeholder,
+  verify,
+  value,
+  sendotp,
+  onChange,
+  error,
+  inputComponent,
+  onVerifyOtp,
+  children,
+  fullForm,
+  onVerifiedChange,
+}, ref) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [otp, setOtp] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [otpError, setOtpError] = React.useState<string | null>(null);
+  const [isVerified, setIsVerified] = React.useState(false);
+  const [showVerifiedPopup, setShowVerifiedPopup] = React.useState(false);
+  const [verifyFieldError, setVerifyFieldError] = React.useState<string | null>(
+    null
+  );
+  const [verifyFieldErrors, setVerifyFieldErrors] = React.useState<string[]>(
+    []
+  );
+  const [showEmailNotVerifiedPopup, setShowEmailNotVerifiedPopup] = React.useState(false);
 
   // OTP timer logic
-  const OTP_DURATION = 5 * 60 * 1000; // 5 minutes in ms
+  const OTP_DURATION = 5 * 60 * 1000;
   const [otpStart, setOtpStart] = React.useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("otp_request");
@@ -67,8 +89,65 @@ export default function FormField({
     return Date.now();
   });
 
+  // Helper to get and set verification status in localStorage
+  const getVerifiedStatus = (email: string) => {
+    if (typeof window === "undefined") return false;
+    const data = localStorage.getItem("verifiedEmails");
+    if (!data) return false;
+    try {
+      const parsed = JSON.parse(data);
+      return parsed[email] === true;
+    } catch {
+      return false;
+    }
+  };
+  const setVerifiedStatus = (email: string, status: boolean) => {
+    if (typeof window === "undefined") return;
+    let parsed: Record<string, boolean> = {};
+    const data = localStorage.getItem("verifiedEmails");
+    if (data) {
+      try {
+        parsed = JSON.parse(data);
+      } catch {}
+    }
+    parsed[email] = status;
+    localStorage.setItem("verifiedEmails", JSON.stringify(parsed));
+  };
+  const lastVerifiedEmailRef = React.useRef<string | undefined>(undefined);
+
+  useImperativeHandle(ref, () => ({
+    isVerified,
+    showEmailNotVerifiedDialog: () => setShowEmailNotVerifiedPopup(true),
+  }), [isVerified]);
+
   const handleVerifyClick = async (e: React.MouseEvent) => {
     e.preventDefault();
+    setVerifyFieldError(null);
+    setVerifyFieldErrors([]);
+    try {
+      if (fullForm) {
+        verifySchema.parse({
+          fullName: fullForm.fullName,
+          email: fullForm.email,
+        });
+      } else {
+        verifySchema.parse({
+          fullName: value,
+          email: name === "email" ? value : "",
+        });
+      }
+    } catch (err) {
+      if (err instanceof ZodError) {
+        setVerifyFieldErrors(err.errors.map((e) => e.message));
+      } else if (err instanceof Error) {
+        setVerifyFieldError(err.message);
+      } else if (typeof err === "string") {
+        setVerifyFieldError(err);
+      } else {
+        setVerifyFieldError("Validation failed");
+      }
+      return;
+    }
     if (sendotp) {
       setLoading(true);
       setOtpError(null);
@@ -78,11 +157,16 @@ export default function FormField({
         setOtpStart(Date.now());
         setDialogOpen(true);
       } catch (err: unknown) {
-        setOtpError("Failed to send OTP"+err);
+        let message = "Failed to send OTP";
+        if (err instanceof Error) {
+          message = err.message;
+        } else if (typeof err === "string") {
+          message = err;
+        }
+        setOtpError(message);
       } finally {
         setLoading(false);
       }
-    } else {
       setDialogOpen(true);
     }
   };
@@ -96,13 +180,82 @@ export default function FormField({
         await onVerifyOtp(otp);
         setDialogOpen(false);
         setOtp("");
+        setIsVerified(true);
+        const currentEmail = fullForm?.email ?? value;
+        if (name === "email" && currentEmail) {
+          setVerifiedStatus(currentEmail, true);
+        }
+        if (typeof onVerifiedChange === "function") {
+          onVerifiedChange(true);
+        }
+        setShowVerifiedPopup(true);
       } catch (err: unknown) {
-        setOtpError("Invalid OTP"+err);
+        let message = "Invalid OTP";
+        if (err && typeof err === "object" && "message" in err && typeof (err as any).message === "string") {
+          const errMsg = (err as any).message;
+          // Try to extract JSON error message
+          const match = errMsg.match(/\{.*\}/);
+          if (match) {
+            try {
+              const parsed = JSON.parse(match[0]);
+              if (parsed && typeof parsed.message === "string") {
+                message = parsed.message;
+              } else {
+                message = errMsg;
+              }
+            } catch {
+              message = errMsg;
+            }
+          } else {
+            message = errMsg;
+          }
+        } else if (typeof err === "string") {
+          message = err;
+        }
+        setOtpError(message);
       } finally {
         setLoading(false);
       }
     }
   };
+
+  // Notify parent when isVerified changes
+  React.useEffect(() => {
+    if (typeof onVerifiedChange === "function") {
+      onVerifiedChange(isVerified);
+    }
+  }, [isVerified]);
+
+  // On mount and when email changes, check localStorage for verification status
+  React.useEffect(() => {
+    const currentEmail = fullForm?.email ?? value;
+    if (name === "email" && currentEmail) {
+      const verified = getVerifiedStatus(currentEmail);
+      setIsVerified(verified);
+      if (typeof onVerifiedChange === "function") {
+        onVerifiedChange(verified);
+      }
+    }
+  }, [fullForm?.email, value, name]);
+
+  // When resetting isVerified, notify parent
+  React.useEffect(() => {
+    if (isVerified) {
+      let currentEmail = fullForm?.email ?? value;
+      if (name === "email" && currentEmail !== undefined) {
+        if (lastVerifiedEmailRef.current === undefined) {
+          lastVerifiedEmailRef.current = currentEmail;
+        }
+        if (lastVerifiedEmailRef.current !== currentEmail) {
+          setIsVerified(false);
+          lastVerifiedEmailRef.current = currentEmail;
+          if (typeof onVerifiedChange === "function") {
+            onVerifiedChange(false);
+          }
+        }
+      }
+    }
+  }, [fullForm?.email, value, name, isVerified]);
 
   return (
     <div className={`flex flex-col space-y-1 ${width}`}>
@@ -114,6 +267,15 @@ export default function FormField({
               <span className="text-xs text-gray-400 ml-1">(optional)</span>
             )}
             {error && <p className="text-destructive text-sm ">{error}</p>}
+            {verifyFieldError && (
+              <p className="text-destructive text-sm ">{verifyFieldError}</p>
+            )}
+            {verifyFieldErrors.length > 0 &&
+              verifyFieldErrors.map((msg, i) => (
+                <p key={i} className="text-destructive text-sm ">
+                  {msg}
+                </p>
+              ))}
           </div>
           <div className="">
             {verify && (
@@ -122,7 +284,7 @@ export default function FormField({
                 href={"#"}
                 className="text-sm text-blue-500 text-right"
               >
-                {loading ? "Sending..." : "verify"}
+                {isVerified ? "Verified" : loading ? "Sending..." : "verify"}
               </Link>
             )}
           </div>
@@ -168,7 +330,12 @@ export default function FormField({
                 alt="logo"
               />
 
-              <InputOTP maxLength={4} className="text-xl">
+              <InputOTP
+                maxLength={4}
+                className="text-xl"
+                value={otp}
+                onChange={setOtp}
+              >
                 <InputOTPGroup className="gap-2">
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
@@ -207,6 +374,55 @@ export default function FormField({
           </DialogDescription>
         </DialogContent>
       </Dialog>
+      {/* Verified Popup */}
+      {showVerifiedPopup && (
+        <Dialog open={showVerifiedPopup} onOpenChange={setShowVerifiedPopup}>
+          <DialogContent className="
+          aspect-square">
+            <DialogTitle className="text-center text-3xl">Verify your email</DialogTitle>
+            <DialogDescription>
+              <div className=
+              "flex flex-col items-center space-y-7">
+              <Image
+                src={"/popup.png"}
+                className="w-1/3"
+                height={100}
+                width={100}
+                alt="verified"
+              />
+              your email is now verified.
+              </div>
+            </DialogDescription>
+            <Button className="w-full" onClick={() => setShowVerifiedPopup(false)}>Continue</Button>
+          </DialogContent>
+        </Dialog>
+      )}
+      {showEmailNotVerifiedPopup && (
+        <Dialog open={showEmailNotVerifiedPopup} onOpenChange={setShowEmailNotVerifiedPopup}>
+          <DialogContent className="aspect-square">
+            <DialogTitle className="text-center text-3xl">Email Not Verified</DialogTitle>
+            <DialogDescription>
+              <div className="flex flex-col items-center space-y-7">
+                <Image
+                  src={"/popup.png"}
+                  className="w-1/3"
+                  height={100}
+                  width={100}
+                  alt="not verified"
+                />
+                <span className="text-destructive text-center">
+                  Please verify your email before proceeding.
+                </span>
+              </div>
+            </DialogDescription>
+            <Button className="w-full" onClick={() => setShowEmailNotVerifiedPopup(false)}>
+              Close
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
-}
+});
+
+export default FormField;

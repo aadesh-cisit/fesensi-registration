@@ -72,4 +72,9 @@ const paymentPlanDetailsSchema = z.object({
   acceptPolicy: z.literal(true, { message: "You must accept the policy" }),
 });
 
-export { personalDetailsSchema, organizationDetailsSchema, Iddocumentationschema, paymentPlanDetailsSchema };
+const verifySchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+});
+
+export { personalDetailsSchema, organizationDetailsSchema, Iddocumentationschema, paymentPlanDetailsSchema, verifySchema };

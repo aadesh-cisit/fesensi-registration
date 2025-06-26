@@ -56,3 +56,19 @@ export interface StepComponentProps {
   errors: Errors;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
+
+
+export interface SendOtpRequest {
+  email: string;
+  userName: string;
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+} 
+
+export interface SendOtpResponse {
+  success: boolean;
+  message: string;
+}

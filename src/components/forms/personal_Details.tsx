@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import FormField from "../ui/form_field";
+import React, { useRef } from "react";
+import FormField, { FormFieldRef } from "../ui/form_field";
 import {
   Select,
   SelectTrigger,
@@ -9,10 +9,12 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/select";
+import { SendOtpRequest, VerifyOtpRequest } from "@/lib/types";
+import apiCall from "@/api/call";
 
 interface PersonalDetailsProps {
   form: {
-    plan:string
+    plan: string;
     fullName: string;
     email: string;
     password: string;
@@ -34,15 +36,55 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
 }) => {
   // Handler for department change
   const handlePLanchange = (value: string) => {
-    // Create a synthetic event to match the onChange signature
     const event = {
       target: { name: "plan", value },
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
   };
 
+  // Ref to access FormField methods
+  const emailFieldRef = useRef<FormFieldRef>(null);
 
+  // Function to send OTP (no argument, uses form.email)
+  const sendOtp = async () => {
+    console.log("Sending OTP to:", form.email);
+    const body: SendOtpRequest = { email: form.email, userName: form.fullName };
+    return apiCall({
+      url: "organization/send/email/otp",
+      method: "POST",
+      body,
+    });
+  };
 
+  // Function to verify OTP
+  const verifyOtp = async (otp: string) => {
+    console.log({ email: form.email, otp });
+    const body: VerifyOtpRequest = { email: form.email, otp };
+    return apiCall({
+      url: "organization/verify/email/otp",
+      method: "POST",
+      body,
+    });
+  };
+
+  // Handler for Continue button
+  const handleContinue = () => {
+    if (emailFieldRef.current && !emailFieldRef.current.isVerified) {
+      if (emailFieldRef.current.showEmailNotVerifiedDialog) {
+        emailFieldRef.current.showEmailNotVerifiedDialog();
+      }
+      return;
+    }
+    // Proceed with next step or submission
+    // ...
+  };
+
+  // Handler to sync verification status to parent form state
+  const handleVerifiedChange = (verified: boolean) => {
+    onChange({
+      target: { name: "verify", value: verified },
+    } as unknown as React.ChangeEvent<HTMLInputElement>);
+  };
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
@@ -55,12 +97,12 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         onChange={onChange}
         error={errors.plan}
         inputComponent={
-          <Select
-            value={form.plan}
-            onValueChange={handlePLanchange}
-          >
-            <SelectTrigger id="Plans" className="w-full mb-4 bg-indigo-50 active:border-[1px] active:border-[#2141BB] focus-visible:border-[#2141BB] focus-visible:border-[1px] focus-visible:ring-[#2141BB]  focus-visible:ring-[1px]">
-              <SelectValue placeholder="Select a plan" className=""/>
+          <Select value={form.plan} onValueChange={handlePLanchange}>
+            <SelectTrigger
+              id="Plans"
+              className="w-full mb-4 bg-indigo-50 active:border-[1px] active:border-[#2141BB] focus-visible:border-[#2141BB] focus-visible:border-[1px] focus-visible:ring-[#2141BB]  focus-visible:ring-[1px]"
+            >
+              <SelectValue placeholder="Select a plan" className="" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Free">Free</SelectItem>
@@ -79,6 +121,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         error={errors.fullName}
       />
       <FormField
+        ref={emailFieldRef}
         label="Email"
         name="email"
         type="email"
@@ -87,9 +130,11 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         onChange={onChange}
         error={errors.email}
         verify={true}
-
+        sendotp={sendOtp}
+        onVerifyOtp={verifyOtp}
+        fullForm={{ fullName: form.fullName, email: form.email }}
+        onVerifiedChange={handleVerifiedChange}
       />
-
       <FormField
         label="Create Password"
         name="password"
@@ -99,7 +144,6 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         onChange={onChange}
         error={errors.password}
       />
-
       <FormField
         label="Confirm Password"
         name="confirmPassword"
@@ -109,7 +153,6 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         onChange={onChange}
         error={errors.confirmPassword}
       />
-
       <FormField
         label="Contact Number"
         name="contactNumber"
@@ -117,7 +160,6 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         value={form.contactNumber}
         onChange={onChange}
         error={errors.contactNumber}
- 
       />
       <FormField
         label="Department"
