@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Personal_Details from "@/components/forms/personal_Details";
@@ -9,6 +9,7 @@ import type {
   PersonalDetailsForm,
   OrganizationDetailsForm,
   PaymentPlanDetailsForm,
+  IdentificationDetailsForm,
 } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -17,7 +18,7 @@ import {
   personalDetailsSchema,
 } from "@/lib/zodSchemas";
 import Organization_details from "@/components/forms/organization_details";
-import { useParams, useSearchParams } from "next/navigation";
+import {  useSearchParams } from "next/navigation";
 import IdentificationDetails from "@/components/forms/official_docs";
 import PaymentPlanDetails from "@/components/forms/payment-plan-details";
 import { paymentPlanDetailsSchema } from "@/lib/zodSchemas";
@@ -38,6 +39,7 @@ const steps = [
     component: Personal_Details,
     schema: personalDetailsSchema,
     initial: {
+      plan:"",
       fullName: "",
       email: "",
       password: "",
@@ -162,7 +164,7 @@ const steps = [
   },
 ];
 
-export default function Page() {
+function PageContent() {
   const params = useSearchParams();
 
   const plan = params.get("plan");
@@ -174,7 +176,7 @@ export default function Page() {
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ): void {
-    let value: any = e.target.value;
+    let value: string|boolean = e.target.value;
     if (e.target.type === "checkbox") {
       value = e.target.checked;
     }
@@ -211,8 +213,7 @@ export default function Page() {
 
   // Handler for file upload in IdentificationDetails (placeholder)
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>): void {
-    // You can implement file upload logic here if needed
-    // For now, do nothing
+   console.log(e)
   }
 
   // Reusable validation function for current step
@@ -345,7 +346,7 @@ export default function Page() {
         )}
         {step === 2 && (
           <IdentificationDetails
-            form={form as any}
+            form={form as IdentificationDetailsForm}
             errors={errors}
             onChange={handleChange}
             onSelectChange={handleSelectChange}
@@ -374,5 +375,13 @@ export default function Page() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PageContent />
+    </Suspense>
   );
 }

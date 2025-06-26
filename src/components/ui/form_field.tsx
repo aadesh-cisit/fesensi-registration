@@ -3,20 +3,17 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import React from "react";
 import Image from "next/image";
-import Countdown from 'react-countdown';
+import Countdown from "react-countdown";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
   DialogDescription,
 } from "../ui/dialog";
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "./button";
@@ -63,8 +60,8 @@ export default function FormField({
   // OTP timer logic
   const OTP_DURATION = 5 * 60 * 1000; // 5 minutes in ms
   const [otpStart, setOtpStart] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('otp_request');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("otp_request");
       return saved ? parseInt(saved) : Date.now();
     }
     return Date.now();
@@ -80,8 +77,8 @@ export default function FormField({
         savetimer();
         setOtpStart(Date.now());
         setDialogOpen(true);
-      } catch (err: any) {
-        setOtpError("Failed to send OTP");
+      } catch (err: unknown) {
+        setOtpError("Failed to send OTP"+err);
       } finally {
         setLoading(false);
       }
@@ -99,8 +96,8 @@ export default function FormField({
         await onVerifyOtp(otp);
         setDialogOpen(false);
         setOtp("");
-      } catch (err: any) {
-        setOtpError("Invalid OTP");
+      } catch (err: unknown) {
+        setOtpError("Invalid OTP"+err);
       } finally {
         setLoading(false);
       }
@@ -130,7 +127,6 @@ export default function FormField({
             )}
           </div>
         </Label>
-        
       </div>
       {children ? (
         children
@@ -139,7 +135,7 @@ export default function FormField({
       ) : (
         <Input
           readOnly={readonly}
-          className="bg-indigo-50"
+          className="bg-indigo-50 focus-visible:border-[#] "
           id={name}
           name={name}
           type={type}
@@ -181,23 +177,32 @@ export default function FormField({
                 </InputOTPGroup>
               </InputOTP>
 
-
+              {otpError && <div className="text-destructive">{otpError}</div>}
               <div className="">
                 <Countdown
                   date={otpStart + OTP_DURATION}
                   renderer={({ minutes, seconds, completed }) =>
                     completed ? (
-                      <Link href={'#'} className="text-blue-500" onClick={handleVerifyClick}>
+                      <Link
+                        href={"#"}
+                        className="text-blue-500"
+                        onClick={handleVerifyClick}
+                      >
                         Resend otp
                       </Link>
                     ) : (
-                      <span>Resend code in {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
+                      <span>
+                        Resend code in {String(minutes).padStart(2, "0")}:
+                        {String(seconds).padStart(2, "0")}
+                      </span>
                     )
                   }
                 />
               </div>
 
-              <Button className="w-full" onClick={handleOtpSubmit}>Verify</Button>
+              <Button className="w-full" onClick={handleOtpSubmit}>
+                Verify
+              </Button>
             </div>
           </DialogDescription>
         </DialogContent>

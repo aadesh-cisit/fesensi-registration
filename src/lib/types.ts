@@ -1,4 +1,5 @@
 export interface PersonalDetailsForm {
+  plan:string;
   fullName: string;
   email: string;
   password: string;
