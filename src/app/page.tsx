@@ -3,47 +3,58 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Personal_Details from "@/components/forms/personal_Details";
-import type { FormData, Errors } from "@/lib/types";
+import type { FormData, Errors, PersonalDetailsForm, OrganizationDetailsForm } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
-import { personalDetailsSchema } from "@/lib/zodSchemas";
-
-
-
-  const steps = [
-    {
-      name: "Personal Details",
-      component: Personal_Details,
-      schema: personalDetailsSchema,
-      initial: {
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        contactNumber: "",
-        department: "",
-        designation: "",
+import { organizationDetailsSchema, personalDetailsSchema } from "@/lib/zodSchemas";
+import Organization_details from "@/components/forms/organization_details";
+import { useParams } from "next/navigation";
+const steps = [
+  {
+    name: "Personal Details",
+    component: Personal_Details,
+    schema: personalDetailsSchema,
+    initial: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      contactNumber: "",
+      department: "",
+      designation: "",
+      verify: false,
+    },
+  },
+  {
+    name: "Organisation details",
+    component: Organization_details,
+    schema:organizationDetailsSchema,
+    initial: {
+      organizationName: "",
+      taxId: "",
+      organizationContact: "",
+      organizationEmail: "",
+      organizationIndustry: "",
+      numberOfEmployees: "",
+      organizationWebsite: "",
+      address: {
+        address: "",
+        zip: "",
+        city: "",
+        state: "",
+        country: "",
       },
     },
-  // 
-//  {
-//     name: "Official Identification Documents (Optional For FREE Plan))",
-//     component: Personal_Details ,
-//     schema:personalDetailsSchema,
-//     initial: {
-//       idType: "",
-//       idNumber: "",
-//       issuingAuthority: "",
-//     },
-//   },
-  // Add other steps here
+  },
 ];
 
 export default function Page() {
+  const params =useParams()
+
+  console.log(params.plan)
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(steps[0].initial);
   const [errors, setErrors] = useState<Errors>({});
 
-  const StepComponent = steps[step].component;
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -52,9 +63,30 @@ export default function Page() {
     setErrors({ ...errors, [e.target.name]: "" });
   }
 
+  function handleAddressChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void {
+    const prevAddress = 'address' in form ? form.address : {
+      address: '',
+      zip: '',
+      city: '',
+      state: '',
+      country: ''
+    };
+    setForm({
+      ...form,
+      address: {
+        ...prevAddress,
+        [e.target.name]: e.target.value,
+      },
+    });
+    setErrors({ ...errors, ["address." + e.target.name]: "" });
+  }
+
   function handleNext() {
     const result = steps[step].schema.safeParse(form);
     if (!result.success) {
+      console.log("Validation errors:", result.error.errors);
       const fieldErrors: Errors = {};
       for (const err of result.error.errors) {
         const field = err.path[0];
@@ -63,7 +95,15 @@ export default function Page() {
       setErrors(fieldErrors);
       return;
     }
-    setStep((s) => Math.min(steps.length - 1, s + 1));
+    setStep((s) => {
+      const nextStep = Math.min(steps.length - 1, s + 1);
+      console.log("Advancing to step:", nextStep);
+      setForm((prevForm) => ({
+        ...steps[nextStep].initial,
+        ...prevForm,
+      }));
+      return nextStep;
+    });
   }
 
   function handlePrev() {
@@ -71,8 +111,10 @@ export default function Page() {
   }
 
   return (
-    <Card className=" w-full   max-w-md mx-auto mt-10">
+    <Card className=" w-[90%] mt-10">
       <CardHeader>
+
+        {params.plan}
         <CardTitle className="text-2xl font-bold">
           <Progress value={
             ((step + 1) / steps.length) * 100
@@ -83,12 +125,26 @@ export default function Page() {
             step {step + 1} of {steps.length} - {steps[step].name}
           </div>
         </CardTitle>
+
       </CardHeader>
       <CardContent>
-        <StepComponent form={form} errors={errors} onChange={handleChange} />
+        {step === 1 ? (
+          <Organization_details
+            form={form as OrganizationDetailsForm}
+            errors={errors}
+            onChange={handleChange}
+            onAddressChange={handleAddressChange}
+          />
+        ) : (
+          <Personal_Details
+            form={form as PersonalDetailsForm}
+            errors={errors}
+            onChange={handleChange}
+            onAddressChange={handleChange}
+          />
+        )}
 
         <div className="flex justify-between mt-6">
-
           <Button variant="outline" onClick={handlePrev}
             disabled={step === 0}>
             Previous
