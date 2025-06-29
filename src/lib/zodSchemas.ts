@@ -41,7 +41,6 @@ const organizationDetailsSchema = z.object({
   .email("Invalid email address")
   .optional()
   .or(z.literal("")),
-
   organizationIndustry: z.string().min(1, "Industry is required"),
   numberOfEmployees: z.string().min(1, "Number of employees is required").regex(/^\d+$/, "Must be a number"),
   organizationWebsite: z.string().url("Invalid website URL"),
@@ -52,6 +51,8 @@ const organizationDetailsSchema = z.object({
     state: z.string().min(1, "State is required"),
     country: z.string().min(1, "Country is required"),
   }),
+  orgType: z.string().min(1, "Organization type is required"),
+  marketingChannel: z.string().min(1, "Marketing channel is required"),
 });
 
 const Iddocumentationschema = z.object({

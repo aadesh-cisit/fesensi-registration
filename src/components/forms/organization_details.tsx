@@ -18,6 +18,8 @@ interface OrganizationDetailsForm {
     state: string;
     country: string;
   };
+  orgType: string;
+  marketingChannel: string;
 }
 
 interface OrganizationDetailsProps {
@@ -35,6 +37,17 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
 }) => {
   // Handler for department change
  
+
+  // Handler for orgType select
+  const handleOrgTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const syntheticEvent = {
+      target: {
+        name: "orgType",
+        value: e.target.value,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onChange(syntheticEvent);
+  };
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
@@ -150,6 +163,39 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
         value={form.organizationWebsite}
         onChange={onChange}
         error={errors.organizationWebsite}
+      />
+      
+      <FormField
+        label="Organization Type"
+        name="orgType"
+        placeholder="Select organization type"
+        value={form.orgType}
+        onChange={onChange}
+        error={errors.orgType}
+        inputComponent={
+          <select
+            name="orgType"
+            value={form.orgType}
+            onChange={handleOrgTypeChange}
+            className="w-full p-2 border rounded"
+            required
+          >
+            <option value="">Select type</option>
+            <option value="Private">Private</option>
+            <option value="Public">Public</option>
+            <option value="Non-profit">Non-profit</option>
+            <option value="Government">Government</option>
+          </select>
+        }
+
+      />
+      <FormField
+        label="Marketing Channel"
+        name="marketingChannel"
+        placeholder="How did you hear about us?"
+        value={form.marketingChannel}
+        onChange={onChange}
+        error={errors.marketingChannel}
       />
     </form>
   );

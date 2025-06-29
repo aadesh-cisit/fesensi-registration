@@ -12,16 +12,28 @@ const apiCall = async <T = any>({
   body,
   headers = { "Content-Type": "application/json" },
 }: RequestOptions): Promise<T> => {
-  console.log("Making API call to:", url, "with method:", method, "and body:", body);
     const res = await fetch(`http://13.126.29.230/api/${url}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
-  console.log(res)
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`API Error (${res.status}): ${errorText}`);
+    let errorMessage = 'An error occurred.';
+    try {
+      const errorJson = await res.json();
+      errorMessage = errorJson.message || errorMessage;
+    } catch (e) {
+      // fallback to text if not JSON
+      const errorText = await res.text();
+      // Try to extract message from text if possible
+      const match = errorText.match(/"message"\s*:\s*"([^"]+)"/);
+      if (match) {
+        errorMessage = match[1];
+      } else {
+        errorMessage = errorText;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   return res.json();

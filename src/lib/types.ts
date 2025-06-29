@@ -25,6 +25,8 @@ export interface OrganizationDetailsForm {
     state: string;
     country: string;
   };
+  orgType: string;
+  marketingChannel: string;
 }
 
 export interface IdentificationDetailsForm {
@@ -72,3 +74,19 @@ export interface SendOtpResponse {
   success: boolean;
   message: string;
 }
+
+
+export interface PlanDetails {
+  id: string;
+  name: string;
+  rate?: number;
+  duration?: string[];
+  status?: boolean;
+  createdBy?: { _id: string; first_name: string; email: string };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type PlanDurationsResponse = {
+  [key: string]: string;
+};

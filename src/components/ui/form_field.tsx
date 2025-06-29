@@ -83,7 +83,7 @@ const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
   const OTP_DURATION = 5 * 60 * 1000;
   const [otpStart, setOtpStart] = React.useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("otp_request");
+      const saved = sessionStorage.getItem("otp_request");
       return saved ? parseInt(saved) : Date.now();
     }
     return Date.now();
@@ -92,7 +92,7 @@ const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
   // Helper to get and set verification status in localStorage
   const getVerifiedStatus = (email: string) => {
     if (typeof window === "undefined") return false;
-    const data = localStorage.getItem("verifiedEmails");
+    const data = sessionStorage.getItem("verifiedEmails");
     if (!data) return false;
     try {
       const parsed = JSON.parse(data);
@@ -104,14 +104,14 @@ const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
   const setVerifiedStatus = (email: string, status: boolean) => {
     if (typeof window === "undefined") return;
     let parsed: Record<string, boolean> = {};
-    const data = localStorage.getItem("verifiedEmails");
+    const data = sessionStorage.getItem("verifiedEmails");
     if (data) {
       try {
         parsed = JSON.parse(data);
       } catch {}
     }
     parsed[email] = status;
-    localStorage.setItem("verifiedEmails", JSON.stringify(parsed));
+    sessionStorage.setItem("verifiedEmails", JSON.stringify(parsed));
   };
   const lastVerifiedEmailRef = React.useRef<string | undefined>(undefined);
 

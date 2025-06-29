@@ -8,5 +8,5 @@ export function cn(...inputs: ClassValue[]) {
 
 export function savetimer() {
   const time = Date.now();
-  localStorage.setItem('otp_request', time.toString());
+  sessionStorage.setItem('otp_request', time.toString());
 }

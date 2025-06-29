@@ -11,6 +11,7 @@ import {
 } from "../ui/select";
 import { SendOtpRequest, VerifyOtpRequest } from "@/lib/types";
 import apiCall from "@/api/call";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface PersonalDetailsProps {
   form: {
@@ -27,19 +28,38 @@ interface PersonalDetailsProps {
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddressChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  plans: any[]; // <-- Add this prop
+  setSelectedPlan: (plan: any) => void;
+  selectedPlan: any;
 }
 
 const Personal_Details: React.FC<PersonalDetailsProps> = ({
   form,
   errors,
   onChange,
+  plans,
+  setSelectedPlan,
+  selectedPlan,
 }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   // Handler for department change
   const handlePLanchange = (value: string) => {
     const event = {
       target: { name: "plan", value },
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
+    // Find the selected plan object to get its id
+    const selectedPlanObj = plans.find((plan) => plan.name === value);
+    if (selectedPlanObj) {
+      setSelectedPlan(selectedPlanObj);
+      if (selectedPlanObj.id) {
+        const params = new URLSearchParams(Array.from(searchParams.entries()));
+        params.set("planId", selectedPlanObj.id);
+        router.replace(`?${params.toString()}`);
+      }
+    }
   };
 
   // Ref to access FormField methods
@@ -105,9 +125,11 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
               <SelectValue placeholder="Select a plan" className="" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Free">Free</SelectItem>
-              <SelectItem value="Starter">Starter</SelectItem>
-              <SelectItem value="Business">Business</SelectItem>
+              {plans.map((plan) => (
+                <SelectItem key={plan._id || plan.id} value={plan.name}>
+                  {plan.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         }
