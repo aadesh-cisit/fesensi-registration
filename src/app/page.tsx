@@ -36,7 +36,7 @@ import apiCall from "@/api/call";
 function PageContent(): React.ReactElement {
   const params = useSearchParams();
 
-  const planId = params.get("planId");
+  const planId = params.get("plan");
   const [step, setStep] = useState(0);
 
   const [errors, setErrors] = useState<Errors>({});
@@ -59,12 +59,15 @@ function PageContent(): React.ReactElement {
         });
         setSelectedPlanDetails(response.data);
         setSelectedPlan(response.data); // Store the whole plan object
-        setForm((prevForm) => {
-          if (step === 0 && 'plan' in prevForm && prevForm.plan !== response.data.name) {
-            return { ...prevForm, plan: response.data.name };
-          }
-          return prevForm;
-        });
+        // Add a 500ms delay before setting the form's plan field
+        setTimeout(() => {
+          setForm((prevForm) => {
+            if ('plan' in prevForm && !prevForm.plan) {
+              return { ...prevForm, plan: response.data.name };
+            }
+            return prevForm;
+          });
+        }, 500);
       } catch (error) {
         console.error("Failed to fetch plan details:", error);
       }
@@ -152,6 +155,7 @@ function PageContent(): React.ReactElement {
         marketingChannel: "",
       },
     },
+
     {
       name: "Official identification Documentation",
       subheader: "(optional for Free plan)",
@@ -163,6 +167,7 @@ function PageContent(): React.ReactElement {
         issuingAuthority: "",
       },
     },
+
     {
       name: "Payment Plan Details",
       subheader: "",
@@ -202,6 +207,7 @@ function PageContent(): React.ReactElement {
         tax: "",
       },
     },
+
     {
       name: "Registration Completed",
       subheader: "",
@@ -241,6 +247,7 @@ function PageContent(): React.ReactElement {
         tax: "",
       },
     },
+    
   ];
 
   const [form, setForm] = useState<FormData>(steps[0].initial);

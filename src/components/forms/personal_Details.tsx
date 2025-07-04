@@ -50,13 +50,12 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
       target: { name: "plan", value },
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
-    // Find the selected plan object to get its id
     const selectedPlanObj = plans.find((plan) => plan.name === value);
     if (selectedPlanObj) {
       setSelectedPlan(selectedPlanObj);
       if (selectedPlanObj.id) {
         const params = new URLSearchParams(Array.from(searchParams.entries()));
-        params.set("planId", selectedPlanObj.id);
+        params.set("plan", selectedPlanObj.id);
         router.replace(`?${params.toString()}`);
       }
     }

@@ -1,48 +1,48 @@
 import { z } from "zod";
 
-const personalDetailsSchema = z.object({
+const personalDetailsSchema = z
+  .object({
+    plan: z.string().min(1, "Plan is required"),
 
-        
-    fullName: z.string()
-        .min(1, "Full name is required"),
+    fullName: z.string().min(1, "Full name is required"),
 
-    email: z.string()
-        .min(1, "Email is required")
-        .email("Invalid email address"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
 
-    password: z.string()
-        .min(6, "Password must be at least 6 characters"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
 
-    confirmPassword: z.string()
-        .min(1, "Please confirm your password"),
-    
-    contactNumber: z.string()
-        .min(10, "Contact number must be at least 10 digits")
-        .regex(/^\d+$/, "Contact number must be digits only"),
-    
-    department: z.string()
-        .optional(),
-    
-    designation: z.string()
-        .optional(),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
 
+    contactNumber: z
+      .string()
+      .min(10, "Contact number must be at least 10 digits")
+      .regex(/^\d+$/, "Contact number must be digits only"),
 
-}).refine((data) => data.password === data.confirmPassword, {
+    department: z.string().optional(),
+
+    designation: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-})
+  });
 
 const organizationDetailsSchema = z.object({
   organizationName: z.string().min(1, "Organization name is required"),
   taxId: z.string().min(1, "Tax ID is required"),
   organizationContact: z.string().optional(),
   organizationEmail: z
-  .string()
-  .email("Invalid email address")
-  .optional()
-  .or(z.literal("")),
+    .string()
+    .email("Invalid email address")
+    .optional()
+    .or(z.literal("")),
   organizationIndustry: z.string().min(1, "Industry is required"),
-  numberOfEmployees: z.string().min(1, "Number of employees is required").regex(/^\d+$/, "Must be a number"),
+  numberOfEmployees: z
+    .string()
+    .min(1, "Number of employees is required")
+    .regex(/^\d+$/, "Must be a number"),
   organizationWebsite: z.string().url("Invalid website URL"),
   address: z.object({
     address: z.string().min(1, "Address is required"),
@@ -63,7 +63,10 @@ const Iddocumentationschema = z.object({
 
 const paymentPlanDetailsSchema = z.object({
   paymentPlan: z.string().min(1, "Payment plan is required"),
-  agents: z.string().min(1, "Number of agents is required").regex(/^\d+$/, "Must be a number"),
+  agents: z
+    .string()
+    .min(1, "Number of agents is required")
+    .regex(/^\d+$/, "Must be a number"),
   discountCode: z.string().optional(),
   discountPercent: z.string().optional(),
   discountAmount: z.string().optional(),
@@ -78,4 +81,10 @@ const verifySchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
 });
 
-export { personalDetailsSchema, organizationDetailsSchema, Iddocumentationschema, paymentPlanDetailsSchema, verifySchema };
+export {
+  personalDetailsSchema,
+  organizationDetailsSchema,
+  Iddocumentationschema,
+  paymentPlanDetailsSchema,
+  verifySchema,
+};
