@@ -33,7 +33,16 @@ import {
 } from "@/components/ui/dialog";
 import RegistrationCompleted from "../components/forms/registration-completed";
 import apiCall from "@/api/call";
-import { getMaxAge } from "next/dist/server/image-optimizer";
+import { ZodTypeAny } from "zod";
+
+type StepSchema = ZodTypeAny | ((maxAgent: number | undefined) => ZodTypeAny) | null;
+interface Step<TProps, TInitial> {
+  name: string;
+  subheader: string;
+  component: React.ComponentType<TProps>;
+  schema: StepSchema;
+  initial: TInitial;
+}
 
 function PageContent(): React.ReactElement {
   const params = useSearchParams();
@@ -170,7 +179,13 @@ function PageContent(): React.ReactElement {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bypassVerification]);
 
-  const steps: any[] = [
+  const steps: [
+    Step<React.ComponentProps<typeof Personal_Details>, PersonalDetailsForm>,
+    Step<React.ComponentProps<typeof Organization_details>, OrganizationDetailsForm>,
+    Step<React.ComponentProps<typeof IdentificationDetails>, IdentificationDetailsForm>,
+    Step<React.ComponentProps<typeof PaymentPlanDetails>, PaymentPlanDetailsForm>,
+    Step<React.ComponentProps<typeof RegistrationCompleted>, object>
+  ] = [
     {
       name: "Personal Details",
       subheader: "",
@@ -232,37 +247,15 @@ function PageContent(): React.ReactElement {
       component: PaymentPlanDetails,
       schema: paymentPlanDetailsSchema,
       initial: {
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        contactNumber: "",
-        department: "",
-        designation: "",
-        verify: false,
-        organizationName: "",
-        taxId: "",
-        organizationContact: "",
-        organizationEmail: "",
-        organizationIndustry: "",
-        numberOfEmployees: "",
-        organizationWebsite: "",
-        address: {
-          address: "",
-          zip: "",
-          city: "",
-          state: "",
-          country: "",
-        },
-        idType: "",
-        idNumber: "",
-        issuingAuthority: "",
         paymentPlan: "",
         agents: "",
         discountCode: "",
         discountPercent: "",
         discountAmount: "",
         tax: "",
+        agreeToTerms: false,
+        receiveUpdates: false,
+        acceptPolicy: false,
       },
     },
 
