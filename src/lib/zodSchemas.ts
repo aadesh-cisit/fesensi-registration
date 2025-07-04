@@ -61,12 +61,17 @@ const Iddocumentationschema = z.object({
   issuingAuthority: z.string().min(1, "Issuing Authority is required"),
 });
 
-const paymentPlanDetailsSchema = z.object({
+const paymentPlanDetailsSchema = (maxAgent: number | undefined) => z.object({
   paymentPlan: z.string().min(1, "Payment plan is required"),
   agents: z
     .string()
     .min(1, "Number of agents is required")
-    .regex(/^\d+$/, "Must be a number"),
+    .regex(/^\d+$/, "Must be a number")
+    .refine((val) => {
+      if (!maxAgent) return true;
+      const num = Number(val);
+      return num <= maxAgent;
+    }, { message: (maxAgent ? `Cannot exceed ${maxAgent} agents` : 'Invalid number of agents'), path: ["agents"] }),
   discountCode: z.string().optional(),
   discountPercent: z.string().optional(),
   discountAmount: z.string().optional(),

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import FormField, { FormFieldRef } from "../ui/form_field";
 import {
   Select,
@@ -23,7 +23,7 @@ interface PersonalDetailsProps {
     contactNumber: string;
     department: string;
     designation: string;
-    verify: boolean; // <-- Added verify attribute
+    verify: boolean;
   };
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -31,6 +31,7 @@ interface PersonalDetailsProps {
   plans: PlanDetails[];
   setSelectedPlan: (plan: PlanDetails) => void;
   selectedPlan: PlanDetails | null;
+  departments: { _id: string; name: string }[];
 }
 
 const Personal_Details: React.FC<PersonalDetailsProps> = ({
@@ -39,7 +40,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   onChange,
   plans,
   setSelectedPlan,
-  
+  departments,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -85,8 +86,6 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
       body,
     });
   };
-
-  // Handler for Continue button
 
   // Handler to sync verification status to parent form state
   const handleVerifiedChange = (verified: boolean) => {
@@ -176,10 +175,31 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
         label="Department"
         name="department"
         optional={true}
-        placeholder="Enter your Department"
+        placeholder="Select your Department"
         value={form.department}
         onChange={onChange}
         error={errors.department}
+        inputComponent={
+          <select
+            name="department"
+            value={form.department}
+            onChange={(e) => {
+              const syntheticEvent = {
+                target: {
+                  name: "department",
+                  value: e.target.value,
+                },
+              } as React.ChangeEvent<HTMLInputElement>;
+              onChange(syntheticEvent);
+            }}
+            className="w-full p-2 border rounded bg-indigo-50 focus-visible:border-[#] "
+          >
+            <option value="">Select your Department</option>
+            {departments.map((dept) => (
+              <option key={dept._id} value={dept._id}>{dept.name}</option>
+            ))}
+          </select>
+        }
       />
       <FormField
         label="Designation"

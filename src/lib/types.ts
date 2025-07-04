@@ -81,6 +81,7 @@ export interface PlanDetails {
   name: string;
   rate?: number;
   duration?: string[];
+  maxAgent:number
   status?: boolean;
   createdBy?: { _id: string; first_name: string; email: string };
   createdAt?: string;

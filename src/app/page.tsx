@@ -33,12 +33,14 @@ import {
 } from "@/components/ui/dialog";
 import RegistrationCompleted from "../components/forms/registration-completed";
 import apiCall from "@/api/call";
+import { getMaxAge } from "next/dist/server/image-optimizer";
 
 function PageContent(): React.ReactElement {
   const params = useSearchParams();
 
   const planId = params.get("plan");
   const [step, setStep] = useState(0);
+  const [maxagent,setMaxagent]= useState<number>();
 
   const [errors, setErrors] = useState<Errors>({});
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
@@ -48,6 +50,8 @@ function PageContent(): React.ReactElement {
   const [selectedPlanDetails, setSelectedPlanDetails] = useState<PlanDetails | null>(null);
   const [durations, setDurations] = useState<string[]>([]);
   const [backendError, setBackendError] = useState<string | null>(null);
+  const [industryTypes, setIndustryTypes] = useState<{ _id: string; name: string }[]>([]);
+  const [departments, setDepartments] = useState<{ _id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (!planId) return;
@@ -62,6 +66,8 @@ function PageContent(): React.ReactElement {
         });
         setSelectedPlanDetails(response.data);
         setSelectedPlan(response.data);
+        setMaxagent(response.data.maxAgent)
+        console.log(maxagent)
         // Add a 500ms delay before setting the form's plan and planName fields
         setTimeout(() => {
           setForm((prevForm) => {
@@ -79,6 +85,10 @@ function PageContent(): React.ReactElement {
     fetchPlanDetails();
   }, [planId]);
 
+
+
+
+
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -95,6 +105,9 @@ function PageContent(): React.ReactElement {
     };
     fetchPlans();
   }, []);
+
+
+
 
   useEffect(() => {
     const fetchDurations = async () => {
@@ -116,6 +129,36 @@ function PageContent(): React.ReactElement {
   }, []);
 
   useEffect(() => {
+    const fetchIndustryTypes = async () => {
+      try {
+        const response = await apiCall<{ data: { _id: string; name: string }[] }>({
+          url: "/industryType/getAll",
+          method: "GET",
+        });
+        setIndustryTypes(response.data);
+      } catch (error) {
+        console.error("Failed to fetch industry types:", error);
+      }
+    };
+    fetchIndustryTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await apiCall<{ data: { _id: string; name: string }[] }>({
+          url: "/department/getAll",
+          method: "GET",
+        });
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Failed to fetch departments:", error);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
     
     console.log("Updated plans:", plans);
   }, [plans]);
@@ -127,7 +170,7 @@ function PageContent(): React.ReactElement {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bypassVerification]);
 
-  const steps = [
+  const steps: any[] = [
     {
       name: "Personal Details",
       subheader: "",
@@ -314,7 +357,18 @@ function PageContent(): React.ReactElement {
   function validateCurrentStep() {
     const schema = steps[step].schema;
     if (!schema) return true;
-    const result = schema.safeParse(form);
+
+    let actualSchema = schema;
+    // Only call schema as a function for Payment Plan Details step
+    if (step === 3 && typeof schema === "function") {
+      actualSchema = schema(selectedPlanDetails?.maxAgent);
+    }
+    // If actualSchema is still a function, skip validation (should not happen)
+    if (typeof actualSchema === "function" || typeof actualSchema.safeParse !== "function") {
+      return true;
+    }
+
+    const result = actualSchema.safeParse(form);
     if (!result.success) {
       const fieldErrors: Errors = {};
       for (const err of result.error.errors) {
@@ -533,6 +587,7 @@ function PageContent(): React.ReactElement {
             plans={plans}
             setSelectedPlan={(plan: PlanDetails) => setSelectedPlan(plan)}
             selectedPlan={selectedPlan}
+            departments={departments}
           />
         )}
         {step === 1 && (
@@ -541,6 +596,7 @@ function PageContent(): React.ReactElement {
             errors={errors}
             onChange={handleChange}
             onAddressChange={handleAddressChange}
+            industryTypes={industryTypes}
           />
         )}
         {step === 2 && (

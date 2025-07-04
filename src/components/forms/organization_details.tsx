@@ -27,6 +27,7 @@ interface OrganizationDetailsProps {
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddressChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  industryTypes: { _id: string; name: string }[];
 }
 
 const Organization_details: React.FC<OrganizationDetailsProps> = ({
@@ -34,6 +35,7 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
   errors,
   onChange,
   onAddressChange,
+  industryTypes,
 }) => {
   // Handler for department change
  
@@ -89,10 +91,32 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
       <FormField
         label="Organisation Industry"
         name="organizationIndustry"
-        placeholder="Enter industry"
+        placeholder="Select industry"
         value={form.organizationIndustry}
         onChange={onChange}
         error={errors.organizationIndustry}
+        inputComponent={
+          <select
+            name="organizationIndustry"
+            value={form.organizationIndustry}
+            onChange={(e) => {
+              const syntheticEvent = {
+                target: {
+                  name: "organizationIndustry",
+                  value: e.target.value,
+                },
+              } as React.ChangeEvent<HTMLInputElement>;
+              onChange(syntheticEvent);
+            }}
+            className="w-full p-2 border rounded bg-indigo-50 focus-visible:border-[#] "
+            required
+          >
+            <option value="">Select industry</option>
+            {industryTypes.map((type) => (
+              <option key={type._id} value={type._id}>{type.name}</option>
+            ))}
+          </select>
+        }
       />
       <FormField
         label="Number of Employees"
@@ -177,7 +201,7 @@ const Organization_details: React.FC<OrganizationDetailsProps> = ({
             name="orgType"
             value={form.orgType}
             onChange={handleOrgTypeChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded bg-indigo-50 focus-visible:border-[#] "
             required
           >
             <option value="">Select type</option>
