@@ -208,7 +208,7 @@ const PaymentPlanDetails: React.FC<PaymentPlanDetailsProps> = ({
                 className="mr-2"
               />
               <span>
-                I understand that my organisation's and my personal data will be
+                I understand that my organisation&apos;s and my personal data will be
                 processed in accordance with those policies, and I confirm I am
                 authorised to bind my organisation to this agreement.
               </span>

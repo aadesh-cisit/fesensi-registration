@@ -9,7 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/select";
-import { SendOtpRequest, VerifyOtpRequest } from "@/lib/types";
+import { SendOtpRequest, VerifyOtpRequest, PlanDetails } from "@/lib/types";
 import apiCall from "@/api/call";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -28,9 +28,9 @@ interface PersonalDetailsProps {
   errors: { [key: string]: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddressChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  plans: any[]; // <-- Add this prop
-  setSelectedPlan: (plan: any) => void;
-  selectedPlan: any;
+  plans: PlanDetails[];
+  setSelectedPlan: (plan: PlanDetails) => void;
+  selectedPlan: PlanDetails | null;
 }
 
 const Personal_Details: React.FC<PersonalDetailsProps> = ({
@@ -39,7 +39,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   onChange,
   plans,
   setSelectedPlan,
-  selectedPlan,
+  
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,10 +65,10 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   const emailFieldRef = useRef<FormFieldRef>(null);
 
   // Function to send OTP (no argument, uses form.email)
-  const sendOtp = async () => {
+  const sendOtp = async (): Promise<void> => {
     console.log("Sending OTP to:", form.email);
     const body: SendOtpRequest = { email: form.email, userName: form.fullName };
-    return apiCall({
+    await apiCall({
       url: "organization/send/email/otp",
       method: "POST",
       body,
@@ -76,10 +76,10 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   };
 
   // Function to verify OTP
-  const verifyOtp = async (otp: string) => {
+  const verifyOtp = async (otp: string): Promise<void> => {
     console.log({ email: form.email, otp });
     const body: VerifyOtpRequest = { email: form.email, otp };
-    return apiCall({
+    await apiCall({
       url: "organization/verify/email/otp",
       method: "POST",
       body,
@@ -87,16 +87,6 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
   };
 
   // Handler for Continue button
-  const handleContinue = () => {
-    if (emailFieldRef.current && !emailFieldRef.current.isVerified) {
-      if (emailFieldRef.current.showEmailNotVerifiedDialog) {
-        emailFieldRef.current.showEmailNotVerifiedDialog();
-      }
-      return;
-    }
-    // Proceed with next step or submission
-    // ...
-  };
 
   // Handler to sync verification status to parent form state
   const handleVerifiedChange = (verified: boolean) => {
@@ -125,7 +115,7 @@ const Personal_Details: React.FC<PersonalDetailsProps> = ({
             </SelectTrigger>
             <SelectContent>
               {plans.map((plan) => (
-                <SelectItem key={plan._id || plan.id} value={plan.name}>
+                <SelectItem key={plan.id} value={plan.name}>
                   {plan.name}
                 </SelectItem>
               ))}

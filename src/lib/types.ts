@@ -90,3 +90,54 @@ export interface PlanDetails {
 export type PlanDurationsResponse = {
   [key: string]: string;
 };
+
+export interface FullRegistrationForm {
+  // PersonalDetailsForm
+  plan?: string;
+  fullName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  contactNumber?: string;
+  department?: string;
+  designation?: string;
+  verify?: boolean;
+
+  // OrganizationDetailsForm
+  organizationName?: string;
+  taxId?: string;
+  organizationContact?: string;
+  organizationEmail?: string;
+  organizationIndustry?: string;
+  numberOfEmployees?: string;
+  organizationWebsite?: string;
+  address?: {
+    address?: string;
+    zip?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+  orgType?: string;
+  marketingChannel?: string;
+
+  // IdentificationDetailsForm
+  idType?: string;
+  idNumber?: string;
+  issuingAuthority?: string;
+  uploadIdProof?: string;
+
+  // PaymentPlanDetailsForm
+  paymentPlan?: string;
+  agents?: string;
+  discountCode?: string;
+  discountPercent?: string;
+  discountAmount?: string;
+  tax?: string;
+  agreeToTerms?: boolean;
+  receiveUpdates?: boolean;
+  acceptPolicy?: boolean;
+
+  // Additional fields for backend mapping
+  planName?: string;
+}

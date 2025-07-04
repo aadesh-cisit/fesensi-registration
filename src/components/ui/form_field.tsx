@@ -191,8 +191,8 @@ const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
         setShowVerifiedPopup(true);
       } catch (err: unknown) {
         let message = "Invalid OTP";
-        if (err && typeof err === "object" && "message" in err && typeof (err as any).message === "string") {
-          const errMsg = (err as any).message;
+        if (err && typeof err === "object" && "message" in err && typeof (err as { message?: unknown }).message === "string") {
+          const errMsg = (err as { message: string }).message;
           // Try to extract JSON error message
           const match = errMsg.match(/\{.*\}/);
           if (match) {
@@ -241,7 +241,7 @@ const FormField = forwardRef<FormFieldRef, FormFieldProps>(function FormField({
   // When resetting isVerified, notify parent
   React.useEffect(() => {
     if (isVerified) {
-      let currentEmail = fullForm?.email ?? value;
+      const currentEmail = fullForm?.email ?? value;
       if (name === "email" && currentEmail !== undefined) {
         if (lastVerifiedEmailRef.current === undefined) {
           lastVerifiedEmailRef.current = currentEmail;

@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Personal_Details from "@/components/forms/personal_Details";
 import type {
-  FormData,
   Errors,
   PersonalDetailsForm,
   OrganizationDetailsForm,
   PaymentPlanDetailsForm,
   IdentificationDetailsForm,
   PlanDurationsResponse,
+  PlanDetails,
+  FullRegistrationForm,
 } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -42,9 +43,9 @@ function PageContent(): React.ReactElement {
   const [errors, setErrors] = useState<Errors>({});
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [bypassVerification, setBypassVerification] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [selectedPlanDetails, setSelectedPlanDetails] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PlanDetails | null>(null);
+  const [plans, setPlans] = useState<PlanDetails[]>([]);
+  const [selectedPlanDetails, setSelectedPlanDetails] = useState<PlanDetails | null>(null);
   const [durations, setDurations] = useState<string[]>([]);
   const [backendError, setBackendError] = useState<string | null>(null);
 
@@ -53,18 +54,20 @@ function PageContent(): React.ReactElement {
     const fetchPlanDetails = async () => {
       console.log(planId)
       try {
-        const response = await apiCall({
+        const response = await apiCall<{
+          data: PlanDetails
+        }>({
           url: `plans/get/plans/${planId}`,
           method: "GET",
         });
         setSelectedPlanDetails(response.data);
-        setSelectedPlan(response.data); // Store the whole plan object
+        setSelectedPlan(response.data);
         // Add a 500ms delay before setting the form's plan and planName fields
         setTimeout(() => {
           setForm((prevForm) => {
             return {
               ...prevForm,
-              plan: response.data._id || planId,
+              plan: response.data.name,
               planName: response.data.name,
             };
           });
@@ -79,7 +82,9 @@ function PageContent(): React.ReactElement {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await apiCall({
+        const response = await apiCall<{
+          data: PlanDetails[]
+        }>({
           url: `/plans/list`,
           method: "GET",
         });
@@ -94,7 +99,9 @@ function PageContent(): React.ReactElement {
   useEffect(() => {
     const fetchDurations = async () => {
       try {
-        const response = await apiCall({
+        const response = await apiCall<{
+          data: PlanDurationsResponse
+        }>({
           url: "/plans/get/plans/duration",
           method: "GET",
         });
@@ -112,6 +119,13 @@ function PageContent(): React.ReactElement {
     
     console.log("Updated plans:", plans);
   }, [plans]);
+
+  useEffect(() => {
+    if (bypassVerification) {
+      handleNext();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bypassVerification]);
 
   const steps = [
     {
@@ -251,7 +265,7 @@ function PageContent(): React.ReactElement {
     
   ];
 
-  const [form, setForm] = useState<FormData>(steps[0].initial);
+  const [form, setForm] = useState<FullRegistrationForm>(steps[0].initial);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -347,8 +361,8 @@ function PageContent(): React.ReactElement {
   }
 
   // Add this function to map form state to backend format
-  function mapFormDataToBackendFormat(form: any) {
-    const backendData: any = {
+  function mapFormDataToBackendFormat(form: FullRegistrationForm) {
+    const backendData: Record<string, unknown> = {
       organizationName: form.organizationName,
       orgType: form.orgType, // TODO: Add to form if not present
       orgAddress: form.address?.address,
@@ -356,7 +370,6 @@ function PageContent(): React.ReactElement {
       state: form.address?.state,
       country: form.address?.country,
       zipCode: form.address?.zip,
-     
       taxId: form.taxId,
       marketingChannel: form.marketingChannel,
       idProof: {
@@ -381,10 +394,10 @@ function PageContent(): React.ReactElement {
       designation: form.designation,
     };
     if (form.organizationEmail) {
-      backendData.orgEmail = form.organizationEmail;
+      backendData["orgEmail"] = form.organizationEmail;
     }
     if (form.organizationContact) {
-      backendData.orgContact = Number(form.organizationContact);
+      backendData["orgContact"] = Number(form.organizationContact);
     }
     return backendData;
   }
@@ -397,21 +410,21 @@ function PageContent(): React.ReactElement {
     const backendData = mapFormDataToBackendFormat(form);
     console.log(backendData)
     try {
-      const response = await apiCall({
+      await apiCall({
         url: "organization/onboard/organization",
         method: "POST",
         body: backendData,
       });
       setBackendError(null); // Clear error on success
       setStep(steps.length - 1);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Show the full error object for debugging
       let errorDetails = "Registration failed.";
       if (error) {
         if (typeof error === "object") {
           try {
             errorDetails = JSON.stringify(error, null, 2);
-          } catch (e) {
+          } catch {
             errorDetails = String(error);
           }
         } else {
@@ -454,22 +467,22 @@ function PageContent(): React.ReactElement {
         {/* Display backend error if present */}
         {backendError && (
           (() => {
-            let errorObj: any = backendError;
+            let errorObj: { message?: string; errors?: { msg: string }[] } | string = backendError;
             // Try to parse if it's a JSON string
             if (typeof backendError === 'string') {
               try {
                 errorObj = JSON.parse(backendError);
-              } catch (e) {
+              } catch {
                 // Not JSON, fallback to string
                 errorObj = { message: backendError };
               }
             }
             return (
               <div className="mb-4 p-2 bg-red-100 text-red-700 rounded border border-red-300">
-                <div><b>{errorObj.message || 'Registration failed.'}</b></div>
-                {Array.isArray(errorObj.errors) && errorObj.errors.length > 0 && (
+                <div><b>{typeof errorObj === 'string' ? errorObj : errorObj.message || 'Registration failed.'}</b></div>
+                {typeof errorObj !== 'string' && Array.isArray(errorObj.errors) && errorObj.errors.length > 0 && (
                   <ul className="mt-2 list-disc list-inside">
-                    {errorObj.errors.map((err: any, idx: number) => (
+                    {errorObj.errors.map((err, idx) => (
                       <li key={idx}>{err.msg}</li>
                     ))}
                   </ul>
@@ -504,7 +517,6 @@ function PageContent(): React.ReactElement {
                 onClick={() => {
                   setShowVerifyDialog(false);
                   setBypassVerification(true);
-                  setTimeout(() => handleNext(), 0); // Proceed after closing dialog
                 }}
               >
                 Continue without verification
@@ -519,7 +531,7 @@ function PageContent(): React.ReactElement {
             onChange={handleChange}
             onAddressChange={handleChange}
             plans={plans}
-            setSelectedPlan={setSelectedPlan}
+            setSelectedPlan={(plan: PlanDetails) => setSelectedPlan(plan)}
             selectedPlan={selectedPlan}
           />
         )}
