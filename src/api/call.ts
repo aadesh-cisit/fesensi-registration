@@ -18,22 +18,18 @@ const apiCall = async <T = any>({
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
-    let errorMessage = 'An error occurred.';
+    let errorObj: any = { message: 'An error occurred.' };
     try {
       const errorJson = await res.json();
-      errorMessage = errorJson.message || errorMessage;
+      errorObj = errorJson;
     } catch (e) {
       // fallback to text if not JSON
       const errorText = await res.text();
-      // Try to extract message from text if possible
-      const match = errorText.match(/"message"\s*:\s*"([^"]+)"/);
-      if (match) {
-        errorMessage = match[1];
-      } else {
-        errorMessage = errorText;
-      }
+      errorObj = { message: errorText };
     }
-    throw new Error(errorMessage);
+    // Attach status for extra context
+    errorObj.status = res.status;
+    throw errorObj;
   }
 
   return res.json();

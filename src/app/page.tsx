@@ -59,13 +59,14 @@ function PageContent(): React.ReactElement {
         });
         setSelectedPlanDetails(response.data);
         setSelectedPlan(response.data); // Store the whole plan object
-        // Add a 500ms delay before setting the form's plan field
+        // Add a 500ms delay before setting the form's plan and planName fields
         setTimeout(() => {
           setForm((prevForm) => {
-            if ('plan' in prevForm && !prevForm.plan) {
-              return { ...prevForm, plan: response.data.name };
-            }
-            return prevForm;
+            return {
+              ...prevForm,
+              plan: response.data._id || planId,
+              planName: response.data.name,
+            };
           });
         }, 500);
       } catch (error) {
@@ -347,20 +348,17 @@ function PageContent(): React.ReactElement {
 
   // Add this function to map form state to backend format
   function mapFormDataToBackendFormat(form: any) {
-    return {
+    const backendData: any = {
       organizationName: form.organizationName,
       orgType: form.orgType, // TODO: Add to form if not present
-      orgEmail: form.organizationEmail,
-      orgContact: form.organizationContact ? Number(form.organizationContact) : undefined,
       orgAddress: form.address?.address,
       city: form.address?.city,
       state: form.address?.state,
       country: form.address?.country,
       zipCode: form.address?.zip,
-      // industry type 
+     
       taxId: form.taxId,
       marketingChannel: form.marketingChannel,
-      departments: form.departments, // TODO: Add to form if not present
       idProof: {
         idType: form.idType,
         idNumber: form.idNumber,
@@ -368,8 +366,9 @@ function PageContent(): React.ReactElement {
         uploadIdProof: form.uploadIdProof, // TODO: Add to form if not present
       },
       planCommitment: {
-        planName: form.paymentPlan,
-        planDuration: form.planDuration, // TODO: Add to form if not present
+        planId: planId,
+        planName: form.plan,
+        planDuration: form.paymentPlan, 
         noOfAgent: form.agents,
       },
       orgWebsite: form.organizationWebsite,
@@ -381,6 +380,13 @@ function PageContent(): React.ReactElement {
       department: form.department,
       designation: form.designation,
     };
+    if (form.organizationEmail) {
+      backendData.orgEmail = form.organizationEmail;
+    }
+    if (form.organizationContact) {
+      backendData.orgContact = Number(form.organizationContact);
+    }
+    return backendData;
   }
 
   // Handler for submitting all data at the last step
@@ -389,6 +395,7 @@ function PageContent(): React.ReactElement {
       return;
     }
     const backendData = mapFormDataToBackendFormat(form);
+    console.log(backendData)
     try {
       const response = await apiCall({
         url: "organization/onboard/organization",
@@ -398,8 +405,20 @@ function PageContent(): React.ReactElement {
       setBackendError(null); // Clear error on success
       setStep(steps.length - 1);
     } catch (error: any) {
-      // Only show the top-level message property from the error
-      setBackendError(error?.message || "Registration failed.");
+      // Show the full error object for debugging
+      let errorDetails = "Registration failed.";
+      if (error) {
+        if (typeof error === "object") {
+          try {
+            errorDetails = JSON.stringify(error, null, 2);
+          } catch (e) {
+            errorDetails = String(error);
+          }
+        } else {
+          errorDetails = String(error);
+        }
+      }
+      setBackendError(errorDetails);
       console.error("Registration failed:", error);
     }
   }
@@ -434,9 +453,30 @@ function PageContent(): React.ReactElement {
       <CardContent>
         {/* Display backend error if present */}
         {backendError && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded border border-red-300">
-            {backendError}
-          </div>
+          (() => {
+            let errorObj: any = backendError;
+            // Try to parse if it's a JSON string
+            if (typeof backendError === 'string') {
+              try {
+                errorObj = JSON.parse(backendError);
+              } catch (e) {
+                // Not JSON, fallback to string
+                errorObj = { message: backendError };
+              }
+            }
+            return (
+              <div className="mb-4 p-2 bg-red-100 text-red-700 rounded border border-red-300">
+                <div><b>{errorObj.message || 'Registration failed.'}</b></div>
+                {Array.isArray(errorObj.errors) && errorObj.errors.length > 0 && (
+                  <ul className="mt-2 list-disc list-inside">
+                    {errorObj.errors.map((err: any, idx: number) => (
+                      <li key={idx}>{err.msg}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })()
         )}
         {/* Email not verified dialog */}
         <Dialog

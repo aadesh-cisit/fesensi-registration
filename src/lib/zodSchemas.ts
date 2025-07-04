@@ -30,10 +30,10 @@ const personalDetailsSchema = z
   });
 
 const organizationDetailsSchema = z.object({
-  organizationName: z.string().min(1, "Organization name is required"),
+   organizationName: z.string().min(1, "Organization name is required"),
   taxId: z.string().min(1, "Tax ID is required"),
-  organizationContact: z.string().optional(),
-  organizationEmail: z
+    organizationContact: z.string().optional(),
+    organizationEmail: z
     .string()
     .email("Invalid email address")
     .optional()
@@ -44,14 +44,14 @@ const organizationDetailsSchema = z.object({
     .min(1, "Number of employees is required")
     .regex(/^\d+$/, "Must be a number"),
   organizationWebsite: z.string().url("Invalid website URL"),
-  address: z.object({
+   address: z.object({
     address: z.string().min(1, "Address is required"),
     zip: z.string().min(1, "Zip is required"),
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
     country: z.string().min(1, "Country is required"),
   }),
-  orgType: z.string().min(1, "Organization type is required"),
+    orgType: z.string().min(1, "Organization type is required"),
   marketingChannel: z.string().min(1, "Marketing channel is required"),
 });
 
