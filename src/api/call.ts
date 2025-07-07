@@ -11,7 +11,7 @@ const apiCall = async <T = unknown, TBody = unknown>({
   body,
   headers = { "Content-Type": "application/json" },
 }: RequestOptions<TBody>): Promise<T> => {
-    const res = await fetch(`http://13.126.29.230/api/${url}`, {
+    const res = await fetch(`https://tenants.fesensi.com/api/${url}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
