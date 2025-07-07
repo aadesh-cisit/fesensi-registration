@@ -8,6 +8,7 @@ export interface PersonalDetailsForm {
   department: string;
   designation: string;
   verify: boolean;
+  [key: string]: unknown;
 }
 
 export interface OrganizationDetailsForm {
@@ -27,12 +28,14 @@ export interface OrganizationDetailsForm {
   };
   orgType: string;
   marketingChannel: string;
+  [key: string]: unknown;
 }
 
 export interface IdentificationDetailsForm {
   idType: string;
   idNumber: string;
   issuingAuthority: string;
+  [key: string]: unknown;
 }
 
 export interface PaymentPlanDetailsForm {
@@ -45,6 +48,7 @@ export interface PaymentPlanDetailsForm {
   agreeToTerms: boolean;
   receiveUpdates: boolean;
   acceptPolicy: boolean;
+  [key: string]: unknown;
 }
 
 export type FormData = PersonalDetailsForm | OrganizationDetailsForm | IdentificationDetailsForm | PaymentPlanDetailsForm;
@@ -141,4 +145,6 @@ export interface FullRegistrationForm {
 
   // Additional fields for backend mapping
   planName?: string;
+
+  [key: string]: unknown;
 }

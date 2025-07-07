@@ -8,7 +8,6 @@ import type {
   OrganizationDetailsForm,
   PaymentPlanDetailsForm,
   IdentificationDetailsForm,
-  PlanDurationsResponse,
   PlanDetails,
   FullRegistrationForm,
 } from "@/lib/types";
@@ -26,14 +25,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import RegistrationCompleted from "../components/forms/registration-completed";
-import { ZodTypeAny } from "zod";
 import { 
   handleFormChange, 
   handleAddressChange, 
   handleSelectChange,
   handleFileUpload,
   validateStep, 
-  mapFormDataToBackendFormat,
   fetchPlanDetails,
   fetchPlans,
   fetchDurations,
@@ -41,11 +38,10 @@ import {
   fetchDepartments,
   handleNextStep,
   handlePrevStep,
-  formatErrorDetails,
   parseErrorObject,
   submitRegistration
 } from "@/lib/utils";
-import { registrationSteps, type Step, type StepSchema } from "@/lib/registrationSteps";
+import { registrationSteps, } from "@/lib/registrationSteps";
 
 function PageContent(): React.ReactElement {
   const params = useSearchParams();

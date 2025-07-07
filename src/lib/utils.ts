@@ -14,7 +14,7 @@ export function savetimer() {
 }
 
 // Generic form change handler
-export function handleFormChange<T extends Record<string, any>>(
+export function handleFormChange<T extends Record<string, unknown>>(
   form: T,
   setForm: React.Dispatch<React.SetStateAction<T>>,
   setErrors: React.Dispatch<React.SetStateAction<Errors>>,
@@ -29,15 +29,15 @@ export function handleFormChange<T extends Record<string, any>>(
 }
 
 // Generic address change handler
-export function handleAddressChange<T extends Record<string, any>>(
+export function handleAddressChange<T extends Record<string, unknown>>(
   form: T,
   setForm: React.Dispatch<React.SetStateAction<T>>,
   setErrors: React.Dispatch<React.SetStateAction<Errors>>,
   e: React.ChangeEvent<HTMLInputElement>
 ): void {
   const prevAddress =
-    "address" in form
-      ? form.address
+    "address" in form && typeof (form as Record<string, unknown>)["address"] === "object"
+      ? (form as unknown as { address: Record<string, unknown> }).address
       : {
           address: "",
           zip: "",
@@ -56,7 +56,7 @@ export function handleAddressChange<T extends Record<string, any>>(
 }
 
 // Generic select change handler
-export function handleSelectChange<T extends Record<string, any>>(
+export function handleSelectChange<T extends Record<string, unknown>>(
   form: T,
   setForm: React.Dispatch<React.SetStateAction<T>>,
   setErrors: React.Dispatch<React.SetStateAction<Errors>>,
@@ -217,12 +217,12 @@ export async function fetchDepartments(): Promise<{ _id: string; name: string }[
 // Step navigation functions
 export function handleNextStep(
   step: number,
-  steps: any[],
-  form: any,
-  selectedPlanDetails: any,
+  steps: unknown[],
+  form: Record<string, unknown>,
+  selectedPlanDetails: unknown,
   bypassVerification: boolean,
   setStep: React.Dispatch<React.SetStateAction<number>>,
-  setForm: React.Dispatch<React.SetStateAction<any>>,
+  setForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>,
   setShowVerifyDialog: React.Dispatch<React.SetStateAction<boolean>>,
   setBypassVerification: React.Dispatch<React.SetStateAction<boolean>>,
   setBackendError: React.Dispatch<React.SetStateAction<string | null>>,
@@ -231,7 +231,7 @@ export function handleNextStep(
   // If on the first step and email is not verified and not bypassing, show dialog
   if (
     step === 0 &&
-    !(form as PersonalDetailsForm).verify &&
+    !(form as unknown as PersonalDetailsForm).verify &&
     !bypassVerification
   ) {
     setShowVerifyDialog(true);
@@ -247,8 +247,8 @@ export function handleNextStep(
     const nextStep = Math.min(steps.length - 1, s + 1);
     // Only update form if not on the last step
     if (nextStep < steps.length - 1) {
-      setForm((prevForm: any) => ({
-        ...steps[nextStep].initial,
+      setForm((prevForm: Record<string, unknown>) => ({
+        ...((steps[nextStep] as { initial: Record<string, unknown> }).initial),
         ...prevForm,
       }));
     }
@@ -303,7 +303,7 @@ export async function submitRegistration(
   validateCurrentStep: () => boolean,
   setBackendError: React.Dispatch<React.SetStateAction<string | null>>,
   setStep: React.Dispatch<React.SetStateAction<number>>,
-  steps: any[]
+  steps: unknown[]
 ): Promise<boolean> {
   if (!validateCurrentStep()) {
     return false;
