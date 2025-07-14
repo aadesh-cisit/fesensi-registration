@@ -274,16 +274,7 @@ function PageContent(): React.ReactElement {
               >
                 Verify
               </Button>
-              <Button
-                className="w-2/3"
-                variant="outline"
-                onClick={() => {
-                  setShowVerifyDialog(false);
-                  setBypassVerification(true);
-                }}
-              >
-                Continue without verification
-              </Button>
+             
             </DialogFooter>
           </DialogContent>
         </Dialog>

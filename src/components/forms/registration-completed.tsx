@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 export default function RegistrationCompleted() {
   return (
@@ -19,10 +20,11 @@ export default function RegistrationCompleted() {
         Check your email for further details.
       </p>
       <div className="flex gap-2 w-full">
-        <Button variant={"outline"} className="w-1/3">
-          back
+        <Button variant={"default"} className="w-1/3">
+        <Link href={'https://fesensi.com/'}>
+          Go Home
+        </Link>
         </Button>
-        <Button className="w-2/3">Download Receipt</Button>
       </div>
     </div>
   );
