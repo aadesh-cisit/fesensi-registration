@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-const personalDetailsSchema = z
-  .object({
+const personalDetailsSchema = z.object({
     plan: z.string().min(1, "Plan is required"),
 
     fullName: z.string().min(1, "Full name is required"),
